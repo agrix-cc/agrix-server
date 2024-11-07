@@ -13,7 +13,7 @@ const PORT = process.env.PORT;
 
 sequelize.sync({force: false})
     .then(() => {
-        console.log("All Database models synchronized successfully!");
+        console.log("All Database models were synchronized successfully!");
     })
     .catch(error => {
         console.error(`Error synchronizing the database: ${error}`);
