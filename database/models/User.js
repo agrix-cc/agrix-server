@@ -19,11 +19,8 @@ const User = sequelize.define('User', {
         }
     },
     password: {
-        type: DataTypes.STRING(64),
+        type: DataTypes.STRING,
         allowNull: false,
-        validate: {
-            is: /^[0-9a-f]{64}$/i,
-        },
     },
     user_role: {
         type: DataTypes.ENUM,
@@ -46,6 +43,9 @@ const User = sequelize.define('User', {
         type: DataTypes.ENUM,
         values: ['farmer', 'seller', 'transport', 'storage'],
         allowNull: false,
+        validate: {
+            isIn: [['farmer', 'seller', 'transport', 'storage']],
+        }
     },
     bio: {
         type: DataTypes.TEXT,
