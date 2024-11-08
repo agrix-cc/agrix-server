@@ -12,6 +12,16 @@ router.post('/', async (req, res) => {
     try {
         const {first_name, last_name, email, password, profile_type} = req.body;
 
+        const existingUser = await User.findOne({where: {email: email}});
+
+        if (existingUser) {
+            res.status(400).json({
+                status: 'failed',
+                message: 'You have already registered in the system!',
+            });
+            return;
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = await User.create({first_name, last_name, email, password: hashedPassword, profile_type});
@@ -25,17 +35,9 @@ router.post('/', async (req, res) => {
         });
 
     } catch (error) {
-        // if (error.original.errno === 1062) {
-        //     res.status(409).json({
-        //         status: 'duplicate',
-        //         message: `User already registered!: ${error.message}`,
-        //     });
-        // } else {
-        //
-        // }
         res.status(404).json({
             status: 'failed',
-            message: error,
+            message: error.message,
         });
     }
 });
