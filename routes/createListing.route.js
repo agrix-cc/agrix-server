@@ -53,9 +53,9 @@ router.post('/', authenticate, upload.array('images'), async (req, res) => {
         const listingInfo = JSON.parse(formData.listingInfo);
         const newListing = await Listing.create(listingInfo);
 
-        for (const file of req.files) {
-            await uploadFileToS3(file, newListing);
-        }
+        req.files.forEach(file => {
+            uploadFileToS3(file, newListing);
+        });
 
         // Create relationship with user by adding user id
         const user = await User.findByPk(req.user.id);
