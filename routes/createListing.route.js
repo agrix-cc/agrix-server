@@ -5,25 +5,58 @@ const User = require('../database/models/User');
 const StorageListing = require('../database/models/StorageListing');
 const CropListing = require('../database/models/CropListing');
 const TransportListing = require('../database/models/TransportListing');
+const ListingImage = require('../database/models/ListingImage');
 const {authenticate} = require("../middleware/auth");
+const {v4} = require('uuid');
+const {S3Client, PutObjectCommand} = require("@aws-sdk/client-s3");
+const {extname} = require("node:path");
 const router = express.Router();
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, './uploads')
-    },
-    filename: function (req, file, cb) {
-        cb(null, file.originalname)
-    }
-})
+require('dotenv').config();
+
+const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
+
+const awsAccessKey = process.env.AWS_ACCESS_KEY;
+const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+const awsRegion = process.env.AWS_REGION;
+const awsBucketName = process.env.AWS_BUCKET_NAME;
+
+const s3 = new S3Client({
+    credentials: {
+        accessKeyId: awsAccessKey,
+        secretAccessKey: awsSecretAccessKey,
+    },
+    region: awsRegion,
+});
+
+const uploadFileToS3 = async (file, newListing) => {
+    const imageName = `${v4()}${extname(file.originalname)}`;
+    const params = {
+        Bucket: awsBucketName,
+        Key: imageName,
+        Body: file.buffer,
+        ContentType: file.mimeType,
+    }
+
+    const command = new PutObjectCommand(params);
+
+    await s3.send(command);
+    const newImage = await ListingImage.create({image: imageName});
+    await newListing.addListingImage(newImage);
+}
 
 router.post('/', authenticate, upload.array('images'), async (req, res) => {
     try {
+
         const formData = req.body;
         const listingInfo = JSON.parse(formData.listingInfo);
-
         const newListing = await Listing.create(listingInfo);
+
+        for (const file of req.files) {
+            await uploadFileToS3(file, newListing);
+        }
+
         // Create relationship with user by adding user id
         const user = await User.findByPk(req.user.id);
         await user.addListing(newListing);
