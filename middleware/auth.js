@@ -5,7 +5,7 @@ require('dotenv').config();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 const authenticate = async (req, res, next) => {
-    const token = req.headers('Authentication')?.replace('Bearer ', '');
+    const token = req.headers['authorization']?.replace('Bearer ', '');
 
     if (!token) {
         return res.status(401).json({
@@ -15,9 +15,9 @@ const authenticate = async (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.decode(token, JWT_SECRET_KEY);
+        const decoded = await jwt.decode(token, JWT_SECRET_KEY);
 
-        const user = await User.findByPk(decoded.id);
+        const user = await User.findByPk(decoded.user.id);
 
         if (!user) {
             throw new Error('User not found!');

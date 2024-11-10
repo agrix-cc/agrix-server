@@ -5,6 +5,7 @@ const sequelize = require('./database/connection');
 // Routes
 const signup = require('./routes/signup.route');
 const signin = require('./routes/signin.route');
+const createListing = require('./routes/createListing.route');
 
 require('dotenv').config();
 
@@ -29,7 +30,8 @@ sequelize.sync({force: false})
 app.use('/signup', signup);
 // Sign in route
 app.use('/signin', signin);
-
+// Create new listing route
+app.use('/add-new', createListing);
 
 app.listen(PORT || 5050, () => {
     console.log(`Server is listening to PORT: ${PORT}`);
