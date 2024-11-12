@@ -1,5 +1,10 @@
 const express = require('express');
 const Listing = require('../database/models/Listing');
+const StorageListing = require('../database/models/StorageListing');
+const TransportListing = require('../database/models/TransportListing');
+const CropListing = require('../database/models/CropListing');
+const ListingImage = require('../database/models/ListingImage');
+const {getImage} = require('../utils/s3Client');
 
 const router = express.Router();
 
@@ -28,12 +33,28 @@ router.get('/:offset/:type/:sort/:city/:district', async (req, res) => {
             order: [
                 ordering,
             ],
+            include: [
+                ListingImage,
+                StorageListing,
+                TransportListing,
+                CropListing,
+            ],
         });
+
+        const responseListings = await Promise.all(listings.map(async listing => ({
+            id: listing.id,
+            title: listing.title,
+            description: listing.description,
+            crop: listing.CropListing,
+            storage: listing.StorageListing,
+            transport: listing.TransportListing,
+            imageUrl: listing.ListingImages[0] ? await getImage(listing.ListingImages[0].image) : null,
+            listing_type: listing.listing_type
+        })));
 
         res.status(200).json({
             status: "success",
-            listings: listings,
-            params: {offset, type, sort, city, district},
+            listings: responseListings,
         });
 
     } catch (error) {
