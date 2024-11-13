@@ -5,12 +5,13 @@ const TransportListing = require('../database/models/TransportListing');
 const CropListing = require('../database/models/CropListing');
 const ListingImage = require('../database/models/ListingImage');
 const {getImage} = require('../utils/s3Client');
+const {Op} = require('sequelize');
 
 const router = express.Router();
 
-router.get('/:offset/:type/:sort/:city/:district', async (req, res) => {
+router.get('/:offset/:type/:sort/:city/:district/:keyword?', async (req, res) => {
     try {
-        const {offset, type, sort, city, district} = req.params;
+        const {offset, type, sort, city, district, keyword} = req.params;
 
         const ordering = (sort === "latest" || !sort) ? ['createdAt', 'DESC'] : ['createdAt', 'ASC'];
 
@@ -26,10 +27,28 @@ router.get('/:offset/:type/:sort/:city/:district', async (req, res) => {
             whereClause.district = district;
         }
 
+        const search = keyword ? {
+            [Op.or]: [
+                {
+                    title: {
+                        [Op.substring]: keyword
+                    }
+                },
+                {
+                    description: {
+                        [Op.substring]: keyword
+                    }
+                }
+            ]
+        } : null;
+
         const listings = await Listing.findAndCountAll({
             offset: parseInt(offset) * 8,
             limit: 8,
-            where: whereClause,
+            where: {
+                ...whereClause,
+                ...search,
+            },
             order: [
                 ordering,
             ],
