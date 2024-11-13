@@ -26,9 +26,9 @@ router.get('/:offset/:type/:sort/:city/:district', async (req, res) => {
             whereClause.district = district;
         }
 
-        const listings = await Listing.findAll({
-            offset: parseInt(offset) || 0,
-            limit: 16,
+        const listings = await Listing.findAndCountAll({
+            offset: parseInt(offset) * 8,
+            limit: 8,
             where: whereClause,
             order: [
                 ordering,
@@ -41,7 +41,7 @@ router.get('/:offset/:type/:sort/:city/:district', async (req, res) => {
             ],
         });
 
-        const responseListings = await Promise.all(listings.map(async listing => ({
+        const responseListings = await Promise.all(listings.rows.map(async listing => ({
             id: listing.id,
             title: listing.title,
             description: listing.description,
@@ -55,6 +55,8 @@ router.get('/:offset/:type/:sort/:city/:district', async (req, res) => {
         res.status(200).json({
             status: "success",
             listings: responseListings,
+            count: listings.count,
+            end: listings.rows.length < 8,
         });
 
     } catch (error) {

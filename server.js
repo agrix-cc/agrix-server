@@ -7,6 +7,7 @@ const signup = require('./routes/signup.route');
 const signin = require('./routes/signin.route');
 const createListing = require('./routes/createListing.route');
 const getListings = require('./routes/getListings.route');
+const getSingleListing = require('./routes/getSingleListing.route');
 
 require('dotenv').config();
 
@@ -35,6 +36,8 @@ app.use('/signin', signin);
 app.use('/add-new', createListing);
 // Get all listings
 app.use('/listings', getListings);
+// View single listing
+app.use('/view', getSingleListing);
 
 app.listen(PORT || 5050, () => {
     console.log(`Server is listening to PORT: ${PORT}`);
