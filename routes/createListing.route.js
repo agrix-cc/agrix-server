@@ -9,8 +9,6 @@ const {authenticate} = require("../middleware/auth");
 const {uploadListingImage} = require("../utils/s3Client");
 const router = express.Router();
 
-require('dotenv').config();
-
 const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
 

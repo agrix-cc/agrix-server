@@ -1,6 +1,9 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./database/connection');
+
 
 // Routes
 const signup = require('./routes/signup.route');
@@ -8,8 +11,7 @@ const signin = require('./routes/signin.route');
 const createListing = require('./routes/createListing.route');
 const getListings = require('./routes/getListings.route');
 const getSingleListing = require('./routes/getSingleListing.route');
-
-require('dotenv').config();
+const stripe = require('./routes/stripe.route');
 
 const app = express();
 app.use(express.json());
@@ -38,6 +40,8 @@ app.use('/add-new', createListing);
 app.use('/listings', getListings);
 // View single listing
 app.use('/view', getSingleListing);
+
+app.use('/stripe', stripe);
 
 app.listen(PORT || 5050, () => {
     console.log(`Server is listening to PORT: ${PORT}`);
