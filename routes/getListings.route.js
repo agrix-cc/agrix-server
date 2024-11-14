@@ -6,12 +6,13 @@ const CropListing = require('../database/models/CropListing');
 const ListingImage = require('../database/models/ListingImage');
 const {getImage} = require('../utils/s3Client');
 const {Op} = require('sequelize');
+const User = require("../database/models/User");
 
 const router = express.Router();
 
-router.get('/:offset/:type/:sort/:city/:district/:keyword?', async (req, res) => {
+router.get('/:offset/:type/:sort/:city/:district/:keyword?/:limit?', async (req, res) => {
     try {
-        const {offset, type, sort, city, district, keyword} = req.params;
+        const {offset, type, sort, city, district, keyword, limit} = req.params;
 
         const ordering = (sort === "latest" || !sort) ? ['createdAt', 'DESC'] : ['createdAt', 'ASC'];
 
@@ -44,7 +45,7 @@ router.get('/:offset/:type/:sort/:city/:district/:keyword?', async (req, res) =>
 
         const listings = await Listing.findAndCountAll({
             offset: parseInt(offset) * 8,
-            limit: 8,
+            limit: limit || 8,
             where: {
                 ...whereClause,
                 ...search,
@@ -57,6 +58,10 @@ router.get('/:offset/:type/:sort/:city/:district/:keyword?', async (req, res) =>
                 StorageListing,
                 TransportListing,
                 CropListing,
+                {
+                    model: User,
+                    attributes: ['first_name', 'last_name', 'profile_pic', 'profile_type']
+                },
             ],
         });
 
@@ -68,7 +73,10 @@ router.get('/:offset/:type/:sort/:city/:district/:keyword?', async (req, res) =>
             storage: listing.StorageListing,
             transport: listing.TransportListing,
             imageUrl: listing.ListingImages[0] ? await getImage(listing.ListingImages[0].image) : null,
-            listing_type: listing.listing_type
+            listing_type: listing.listing_type,
+            user: listing.User,
+            city: listing.city,
+            district: listing.district,
         })));
 
         res.status(200).json({

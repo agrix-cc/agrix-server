@@ -22,7 +22,7 @@ app.use(cors());
 
 const PORT = process.env.PORT;
 
-sequelize.sync({force: false})
+sequelize.sync({force: false, alter: true})
     .then(() => {
         console.log("All Database models were synchronized successfully!");
     })

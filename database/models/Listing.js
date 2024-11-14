@@ -26,7 +26,8 @@ const Listing = sequelize.define('Listing', {
     },
 });
 
-User.hasMany(Listing);
-Listing.belongsTo(User);
+// Listing model
+Listing.belongsTo(User, { foreignKey: 'UserId' });
+User.hasMany(Listing, { foreignKey: 'UserId' });
 
 module.exports = Listing;

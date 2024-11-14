@@ -13,9 +13,6 @@ const CropListing = sequelize.define('CropListing', {
         default: 'vegetable',
         allowNull: false,
     },
-    verity: {
-        type: DataTypes.STRING
-    },
     harvested_date: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -45,6 +42,10 @@ const CropListing = sequelize.define('CropListing', {
         values: ['pickup', 'deliver', 'both'],
         default: 'pickup',
         allowNull: false,
+    },
+    delivery_fare_per_kg: {
+        type: DataTypes.DOUBLE,
+        allowNull: true,
     },
     organic: {
         type: DataTypes.BOOLEAN,
