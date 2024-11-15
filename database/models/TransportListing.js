@@ -6,13 +6,13 @@ const TransportListing = sequelize.define('TransportListing', {
     vehicle_type: {
         type: DataTypes.ENUM,
         values: ['van', 'truck', 'trailer', 'three_wheeler', 'mini_van', 'mini_truck', 'pickup_truck'],
-        default: 'van',
+        defaultValue: 'van',
         allowNull: false,
     },
     fuel_type: {
         type: DataTypes.ENUM,
         values: ['petrol', 'diesel', 'electric'],
-        default: 'petrol',
+        defaultValue: 'petrol',
         allowNull: false,
     },
     service_radius: {
@@ -33,19 +33,19 @@ const TransportListing = sequelize.define('TransportListing', {
     },
     temperature_control: {
         type: DataTypes.BOOLEAN,
-        default: false,
+        defaultValue: false,
     },
     temperature_control_max: {
         type: DataTypes.DOUBLE,
-        default: 0,
+        defaultValue: 0,
     },
     temperature_control_min: {
         type: DataTypes.DOUBLE,
-        default: 0,
+        defaultValue: 0,
     },
     refrigerated: {
         type: DataTypes.BOOLEAN,
-        default: false,
+        defaultValue: false,
     },
 });
 

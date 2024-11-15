@@ -1,9 +1,11 @@
 const {DataTypes} = require('sequelize');
 const sequelize = require('../connection');
-const Listing = require('./Listing');
+const CropListing = require('./CropListing');
+const Payment = require("./Payment");
+const User = require("./User");
 
-const CropListing = sequelize.define('CropListing', {
-    crop_name: {
+const CropOrder = sequelize.define('CropOrder', {
+    payment_id: {
         type: DataTypes.STRING,
         allowNull: false,
     },
@@ -53,7 +55,13 @@ const CropListing = sequelize.define('CropListing', {
     },
 });
 
-Listing.hasOne(CropListing);
-CropListing.belongsTo(Listing);
+CropOrder.belongsTo(CropListing);
+CropListing.hasMany(CropOrder);
 
-module.exports = CropListing;
+CropOrder.belongsTo(Payment);
+Payment.hasOne(CropOrder);
+
+CropOrder.belongsTo(User, { foreignKey: 'customer_id' });
+User.hasMany(CropOrder, { foreignKey: 'customer_id' });
+
+module.exports = CropOrder;

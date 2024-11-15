@@ -6,7 +6,7 @@ const StorageListing = sequelize.define('StorageListing', {
     storage_type: {
         type: DataTypes.ENUM,
         values: ['cold_room', 'dry_room'],
-        default: 'cold_room',
+        defaultValue: 'cold_room',
         allowNull: false,
     },
     total_units: {
@@ -27,27 +27,27 @@ const StorageListing = sequelize.define('StorageListing', {
     },
     temperature_control: {
         type: DataTypes.BOOLEAN,
-        default: false,
+        defaultValue: false,
     },
     temperature_control_max: {
         type: DataTypes.DOUBLE,
-        default: 0,
+        defaultValue: 0,
     },
     temperature_control_min: {
         type: DataTypes.DOUBLE,
-        default: 0,
+        defaultValue: 0,
     },
     humidity_control_availability: {
         type: DataTypes.BOOLEAN,
-        default: false,
+        defaultValue: false,
     },
     ventilation_availability: {
         type: DataTypes.BOOLEAN,
-        default: false,
+        defaultValue: false,
     },
     pest_control_availability: {
         type: DataTypes.BOOLEAN,
-        default: false,
+        defaultValue: false,
     },
 });
 
