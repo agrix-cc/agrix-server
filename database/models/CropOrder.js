@@ -5,61 +5,33 @@ const Payment = require("./Payment");
 const User = require("./User");
 
 const CropOrder = sequelize.define('CropOrder', {
-    payment_id: {
+    quantity: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    delivery_method: {
+        type: DataTypes.ENUM,
+        values: ['deliver', 'pickup'],
+        allowNull: false,
+        defaultValue: 'pickup'
+    },
+    placed_address: {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    crop_type: {
+    status: {
         type: DataTypes.ENUM,
-        values: ['fruit', 'vegetable', 'grains'],
-        defaultValue: 'vegetable',
+        values: ['pending', 'processing', 'cancelled', 'delivered'],
+        defaultValue: 'pending',
         allowNull: false,
-    },
-    harvested_date: {
-        type: DataTypes.DATE,
-        allowNull: false,
-    },
-    available_quantity: {
-        type: DataTypes.DOUBLE,
-        allowNull: false,
-    },
-    price_per_kg: {
-        type: DataTypes.DOUBLE,
-        allowNull: false,
-    },
-    quality_condition: {
-        type: DataTypes.ENUM,
-        values: ['fresh', 'rotten', 'overripe'],
-        defaultValue: 'fresh',
-        allowNull: false,
-    },
-    quality_grade: {
-        type: DataTypes.ENUM,
-        values: ['A', 'B', 'C'],
-        defaultValue: 'A',
-        allowNull: false,
-    },
-    delivery_options: {
-        type: DataTypes.ENUM,
-        values: ['pickup', 'deliver', 'both'],
-        defaultValue: 'pickup',
-        allowNull: false,
-    },
-    delivery_fare_per_kg: {
-        type: DataTypes.DOUBLE,
-        allowNull: true,
-    },
-    organic: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-    },
+    }
 });
+
+CropOrder.belongsTo(Payment, { foreignKey: 'payment_id' });
+Payment.hasOne(CropOrder, { foreignKey: 'payment_id' });
 
 CropOrder.belongsTo(CropListing);
 CropListing.hasMany(CropOrder);
-
-CropOrder.belongsTo(Payment);
-Payment.hasOne(CropOrder);
 
 CropOrder.belongsTo(User, { foreignKey: 'customer_id' });
 User.hasMany(CropOrder, { foreignKey: 'customer_id' });

@@ -1,5 +1,6 @@
-const {DataTypes} = require('sequelize');
+const { DataTypes } = require('sequelize');
 const sequelize = require('../connection');
+const CropOrder = require('./CropOrder');
 
 const Payment = sequelize.define('Payment', {
     amount: {
@@ -12,7 +13,7 @@ const Payment = sequelize.define('Payment', {
     },
     status: {
         type: DataTypes.ENUM,
-        values: ['accepted', 'canceled'],
+        values: ['accepted', 'cancelled'],
         allowNull: false,
         defaultValue: 'accepted',
     }
