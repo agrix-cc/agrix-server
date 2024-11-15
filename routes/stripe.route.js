@@ -10,12 +10,16 @@ router.get("/config", (req, res) => {
 
 router.post('/create-intent', async (req, res) => {
     try {
+
+        const {total, description} = req.body;
+
         const intent = await stripe.paymentIntents.create({
-            amount: 150,
-            currency: 'usd',
+            amount: Math.round(total * 100),
+            currency: 'lkr',
             automatic_payment_methods: {
                 enabled: true
             },
+            description: description,
         });
 
         res.status(200).json({
