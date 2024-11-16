@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../connection');
-const CropOrder = require('./CropOrder');
 
 const Payment = sequelize.define('Payment', {
     amount: {

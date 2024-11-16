@@ -6,10 +6,8 @@ const User = require("./User");
 
 const TransportOrder = sequelize.define('TransportOrder', {
     booked_date: {
-        type: DataTypes.ENUM,
-        values: ['deliver', 'pickup'],
+        type: DataTypes.DATEONLY,
         allowNull: false,
-        defaultValue: 'pickup'
     },
     origin_lng: {
         type: DataTypes.DOUBLE,
