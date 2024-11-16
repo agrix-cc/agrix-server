@@ -1,10 +1,12 @@
 const express = require('express');
 const CropListing = require('../database/models/CropListing');
+const TransportListing = require('../database/models/TransportListing');
 const User = require('../database/models/User');
 const CropOrder = require('../database/models/CropOrder');
 const Payment = require('../database/models/Payment');
 const {authenticate} = require("../middleware/auth");
 const sequelize = require('../database/connection');
+const TransportOrder = require("../database/models/TransportOrder");
 
 const router = express.Router();
 
@@ -20,7 +22,6 @@ router.post('/crop', authenticate, async (req, res) => {
             });
 
             const cropOrder = await CropOrder.create({
-                payment_id: payment.id,
                 quantity: order.qty,
                 delivery_method: order.deliveryMethod,
                 placed_address: order.address
@@ -53,11 +54,45 @@ router.post('/crop', authenticate, async (req, res) => {
     }
 });
 
-router.post('/transport', async (req, res) => {
+router.post('/transport', authenticate, async (req, res) => {
     try {
+
+        const {stripeId, order} = req.body;
+
+        const result = await sequelize.transaction(async () => {
+            const payment = await Payment.create({
+                amount: order.transportInfo.subTotal,
+                stripe_id: stripeId
+            });
+
+            const {start, end} = order.transportInfo.locations;
+
+            const transportOrder = await TransportOrder.create({
+                booked_date: order.transportInfo.selectedDate,
+                origin_lng: start.geoCodes.lng,
+                origin_lat: start.geoCodes.lat,
+                destination_lng: end.geoCodes.lng,
+                destination_lat: end.geoCodes.lat,
+                origin_address: start.address,
+                destination_address: end.address,
+                avg_distance: order.transportInfo.distance,
+            });
+
+            await payment.setTransportOrder(transportOrder);
+
+            const transportListing = await TransportListing.findByPk(order.transportId);
+            await transportListing.addTransportOrder(transportOrder);
+
+            const user = await User.findByPk(req.user.id)
+            await user.addTransportOrder(transportOrder);
+
+            return {transportOrder, payment};
+        })
+
         res.status(200).json({
             status: "success",
             message: "Test Transport order api",
+            result: result,
         });
 
     } catch (error) {
