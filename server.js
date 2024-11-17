@@ -12,6 +12,7 @@ const getListings = require('./routes/getListings.route');
 const getSingleListing = require('./routes/getSingleListing.route');
 const stripe = require('./routes/stripe.route');
 const placeOrder = require('./routes/placeOrder.route');
+const search = require('./routes/search.route');
 
 const app = express();
 app.use(express.json());
@@ -44,6 +45,7 @@ app.use('/view', getSingleListing);
 app.use('/stripe', stripe);
 // Place order (Crop/Transport/Storage)
 app.use('/order', placeOrder);
+app.use('/search', search);
 
 app.listen(PORT || 5050, () => {
     console.log(`Server is listening to PORT: ${PORT}`);
