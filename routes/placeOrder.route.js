@@ -16,6 +16,14 @@ router.post('/crop', authenticate, async (req, res) => {
         const {stripeId, order} = req.body;
 
         const result = await sequelize.transaction(async () => {
+
+            const cropListing = await CropListing.findByPk(order.cropId);
+            const user = await User.findByPk(req.user.id);
+
+            if (user.id === cropListing.UserId) {
+                throw new Error("User can not buy their own items!");
+            }
+
             const payment = await Payment.create({
                 amount: order.amount,
                 stripe_id: stripeId
@@ -29,11 +37,8 @@ router.post('/crop', authenticate, async (req, res) => {
 
             await payment.setCropOrder(cropOrder);
 
-            const cropListing = await CropListing.findByPk(order.cropId);
             await cropListing.decrement('available_quantity', {by: order.qty});
             await cropListing.addCropOrder(cropOrder);
-
-            const user = await User.findByPk(req.user.id)
             await user.addCropOrder(cropOrder);
 
             return {cropOrder, payment};
