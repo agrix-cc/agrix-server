@@ -7,6 +7,7 @@ const ListingImage = require('../database/models/ListingImage');
 const User = require('../database/models/User');
 const {getImage} = require('../utils/s3Client');
 const TransportOrder = require("../database/models/TransportOrder");
+const StorageOrder = require("../database/models/StorageOrder");
 
 const router = express.Router();
 
@@ -16,7 +17,13 @@ router.get('/:id?', async (req, res) => {
 
         const listing = await Listing.findByPk(id, {
             include: [
-                StorageListing,
+                {
+                    model: StorageListing,
+                    include: [{
+                        model: StorageOrder,
+                        attributes: ['start_date', 'end_date']
+                    }]
+                },
                 {
                     model: TransportListing,
                     include: [{

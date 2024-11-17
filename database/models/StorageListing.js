@@ -25,20 +25,17 @@ const StorageListing = sequelize.define('StorageListing', {
         type: DataTypes.DOUBLE,
         allowNull: false,
     },
-    pricing_plan: {
-        type: DataTypes.ENUM,
-        values: ['daily', 'monthly', 'both'],
-        defaultValue: 'both',
-        allowNull: false,
-    },
     daily_rate: {
         type: DataTypes.DOUBLE,
-    },
-    monthly_rate: {
-        type: DataTypes.DOUBLE,
+        allowNull: false,
     },
     minimum_days: {
         type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    maximum_days: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
     },
     temperature_control: {
         type: DataTypes.BOOLEAN,

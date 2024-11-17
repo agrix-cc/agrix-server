@@ -1,12 +1,14 @@
 const express = require('express');
 const CropListing = require('../database/models/CropListing');
 const TransportListing = require('../database/models/TransportListing');
+const StorageListing = require('../database/models/StorageListing');
 const User = require('../database/models/User');
 const CropOrder = require('../database/models/CropOrder');
 const Payment = require('../database/models/Payment');
 const {authenticate} = require("../middleware/auth");
 const sequelize = require('../database/connection');
 const TransportOrder = require("../database/models/TransportOrder");
+const StorageOrder = require("../database/models/StorageOrder");
 
 const router = express.Router();
 
@@ -96,7 +98,7 @@ router.post('/transport', authenticate, async (req, res) => {
 
         res.status(200).json({
             status: "success",
-            message: "Test Transport order api",
+            message: "Transport order placed successfully!",
             result: result,
         });
 
@@ -108,11 +110,40 @@ router.post('/transport', authenticate, async (req, res) => {
     }
 });
 
-router.post('/storage', async (req, res) => {
+router.post('/storage', authenticate, async (req, res) => {
     try {
+
+        const {stripeId, order} = req.body;
+
+        const result = await sequelize.transaction(async () => {
+            const payment = await Payment.create({
+                amount: order.orderInfo.subTotal,
+                stripe_id: stripeId
+            });
+
+            const startDate = order.orderInfo.startDate;
+            const endDate = order.orderInfo.endDate;
+
+            const storageOrder = await StorageOrder.create({
+                start_date: startDate,
+                end_date: endDate,
+            });
+
+            await payment.setStorageOrder(storageOrder);
+
+            const storageListing = await StorageListing.findByPk(order.storageId);
+            await storageListing.addStorageOrder(storageOrder);
+
+            const user = await User.findByPk(req.user.id)
+            await user.addStorageOrder(storageOrder);
+
+            return {storageOrder, payment};
+        })
+
         res.status(200).json({
             status: "success",
-            message: "Test Storage order api",
+            message: " Storage order placed successfully!",
+            result: result,
         });
 
     } catch (error) {

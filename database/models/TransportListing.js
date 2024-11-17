@@ -15,10 +15,6 @@ const TransportListing = sequelize.define('TransportListing', {
         defaultValue: 'petrol',
         allowNull: false,
     },
-    service_radius: {
-        type: DataTypes.DOUBLE,
-        allowNull: false,
-    },
     price_per_km: {
         type: DataTypes.DOUBLE,
         allowNull: false,
