@@ -17,6 +17,7 @@ router.post('/', authenticate, upload.array('images'), async (req, res) => {
 
         const formData = req.body;
         const listingInfo = JSON.parse(formData.listingInfo);
+
         const newListing = await Listing.create(listingInfo);
 
         req.files.forEach(file => {

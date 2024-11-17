@@ -9,21 +9,36 @@ const StorageListing = sequelize.define('StorageListing', {
         defaultValue: 'cold_room',
         allowNull: false,
     },
-    total_units: {
+    max_capacity: {
+        type: DataTypes.DOUBLE,
+        allowNull: false,
+    },
+    width: {
+        type: DataTypes.DOUBLE,
+        allowNull: false,
+    },
+    length: {
+        type: DataTypes.DOUBLE,
+        allowNull: false,
+    },
+    height: {
+        type: DataTypes.DOUBLE,
+        allowNull: false,
+    },
+    pricing_plan: {
+        type: DataTypes.ENUM,
+        values: ['daily', 'monthly', 'both'],
+        defaultValue: 'both',
+        allowNull: false,
+    },
+    daily_rate: {
+        type: DataTypes.DOUBLE,
+    },
+    monthly_rate: {
+        type: DataTypes.DOUBLE,
+    },
+    minimum_days: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-    },
-    price_per_unit: {
-        type: DataTypes.DOUBLE,
-        allowNull: false,
-    },
-    volume_per_unit: {
-        type: DataTypes.DOUBLE,
-        allowNull: false,
-    },
-    max_capacity_per_unit: {
-        type: DataTypes.DOUBLE,
-        allowNull: false,
     },
     temperature_control: {
         type: DataTypes.BOOLEAN,
