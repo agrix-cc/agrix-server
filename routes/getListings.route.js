@@ -7,6 +7,7 @@ const ListingImage = require('../database/models/ListingImage');
 const {getImage} = require('../utils/s3Client');
 const {Op} = require('sequelize');
 const User = require("../database/models/User");
+const {authenticate} = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -84,6 +85,33 @@ router.get('/:offset/:type/:sort/:city/:district/:keyword?/:limit?', async (req,
             listings: responseListings,
             count: listings.count,
             end: listings.rows.length < 8,
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            status: "failed",
+            message: error.message,
+        });
+    }
+});
+
+router.get('/user', authenticate, async (req, res) => {
+    try {
+
+        const user = req.user;
+
+        const listings = await Listing.findAll({
+            where: { userId: user.id },
+            include: [
+                CropListing,
+                StorageListing,
+                TransportListing,
+            ]
+        })
+
+        res.status(200).json({
+            status: "success",
+            listings: listings,
         });
 
     } catch (error) {

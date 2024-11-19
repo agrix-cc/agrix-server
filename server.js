@@ -12,7 +12,9 @@ const getListings = require('./routes/getListings.route');
 const getSingleListing = require('./routes/getSingleListing.route');
 const stripe = require('./routes/stripe.route');
 const placeOrder = require('./routes/placeOrder.route');
+const orders = require('./routes/orders.route');
 const search = require('./routes/search.route');
+const profile = require('./routes/profile.route');
 
 const app = express();
 app.use(express.json());
@@ -35,6 +37,8 @@ sequelize.sync({force: false})
 app.use('/signup', signup);
 // Sign in route
 app.use('/signin', signin);
+// Update profile route
+app.use('/profile', profile);
 // Create new listing route
 app.use('/add-new', createListing);
 // Get all listings
@@ -45,6 +49,9 @@ app.use('/view', getSingleListing);
 app.use('/stripe', stripe);
 // Place order (Crop/Transport/Storage)
 app.use('/order', placeOrder);
+// Orders route
+app.use('/orders', orders);
+// Search route
 app.use('/search', search);
 
 app.listen(PORT || 5050, () => {

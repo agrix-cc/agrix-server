@@ -24,6 +24,11 @@ const Listing = sequelize.define('Listing', {
         values: ['crop', 'storage', 'transport'],
         defaultValue: 'crop',
     },
+    status: {
+        type: DataTypes.ENUM,
+        values: ['pending', 'confirmed', 'rejected'],
+        defaultValue: 'pending',
+    }
 });
 
 // Listing model

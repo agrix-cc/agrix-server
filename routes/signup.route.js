@@ -25,7 +25,7 @@ router.post('/', async (req, res) => {
 
         const user = await User.create({first_name, last_name, email, password: hashedPassword, profile_type});
 
-        const token = await jwt.sign({user}, JWT_SECRET_KEY, {expiresIn: '1h'});
+        const token = await jwt.sign({user: {...user.dataValues, image: null}}, JWT_SECRET_KEY, {expiresIn: '1h'});
 
         res.status(200).json({
             status: 'success',

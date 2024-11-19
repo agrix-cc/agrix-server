@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../database/models/User');
+const {getImage} = require("../utils/s3Client");
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
@@ -28,7 +29,9 @@ router.post('/', async (req, res) => {
             });
         }
 
-        const token = await jwt.sign({user}, JWT_SECRET_KEY, {expiresIn: '1h'});
+        const image = await getImage(user.profile_pic);
+
+        const token = await jwt.sign({user: {...user.dataValues, image: image}}, JWT_SECRET_KEY, {expiresIn: '1h'});
 
         res.status(200).json({
             status: 'success',
