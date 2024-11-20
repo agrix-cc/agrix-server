@@ -2,9 +2,7 @@ const {getSignedUrl} = require("@aws-sdk/s3-request-presigner");
 const {S3Client, GetObjectCommand, PutObjectCommand} = require("@aws-sdk/client-s3");
 const {v4} = require("uuid");
 const {extname} = require("node:path");
-const sequelize = require('../database/connection');
 const ListingImage = require("../database/models/ListingImage");
-const User = require("../database/models/User");
 
 const awsAccessKey = process.env.AWS_ACCESS_KEY;
 const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
