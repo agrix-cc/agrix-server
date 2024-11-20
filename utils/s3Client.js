@@ -20,8 +20,6 @@ const client = new S3Client({
 });
 
 const getImage = async (name) => {
-    // TODO return null because everytime it get loads it eats my data
-    // return null;
     const params = {
         Bucket: awsBucketName,
         Key: name,

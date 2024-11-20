@@ -122,4 +122,50 @@ router.get('/user', authenticate, async (req, res) => {
     }
 });
 
+router.get('/latest', async (req, res) => {
+    try {
+        const listings = await Listing.findAll({
+            limit: 10,
+            order: [['createdAt', 'DESC']],
+            include: [
+                ListingImage,
+                StorageListing,
+                TransportListing,
+                CropListing,
+                {
+                    model: User,
+                    attributes: ['first_name', 'last_name', 'profile_pic', 'profile_type']
+                },
+            ],
+        })
+
+        const responseListings = await Promise.all(listings.map(async listing => ({
+            id: listing.id,
+            title: listing.title,
+            description: listing.description,
+            crop: listing.CropListing,
+            storage: listing.StorageListing,
+            transport: listing.TransportListing,
+            images: listing.ListingImages ? await Promise.all(listing.ListingImages.map(async item => await getImage(item.image))) : null,
+            listing_type: listing.listing_type,
+            user: listing.User,
+            userImage: listing.User.profile_pic ? await getImage(listing.User.profile_pic) : null,
+            city: listing.city,
+            district: listing.district,
+        })));
+
+        res.status(200).json({
+            status: "success",
+            listings: responseListings,
+        });
+
+
+    } catch (error) {
+        res.status(500).json({
+            status: "failed",
+            message: error.message,
+        });
+    }
+})
+
 module.exports = router;
