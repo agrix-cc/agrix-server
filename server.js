@@ -8,6 +8,8 @@ const sequelize = require('./database/connection');
 const signup = require('./routes/signup.route');
 const signin = require('./routes/signin.route');
 const createListing = require('./routes/createListing.route');
+const editListing = require('./routes/editListing.route');
+const deleteListing = require('./routes/deleteListing.route');
 const getListings = require('./routes/getListings.route');
 const getSingleListing = require('./routes/getSingleListing.route');
 const stripe = require('./routes/stripe.route');
@@ -45,6 +47,10 @@ app.use('/add-new', createListing);
 app.use('/listings', getListings);
 // View single listing
 app.use('/view', getSingleListing);
+// Edit single listing
+app.use('/edit', editListing);
+// Delete a listing
+app.use('/delete', deleteListing);
 // Stripe payment gateway routes
 app.use('/stripe', stripe);
 // Place order (Crop/Transport/Storage)

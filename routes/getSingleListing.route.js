@@ -8,6 +8,7 @@ const User = require('../database/models/User');
 const {getImage} = require('../utils/s3Client');
 const TransportOrder = require("../database/models/TransportOrder");
 const StorageOrder = require("../database/models/StorageOrder");
+const {authenticate} = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -60,5 +61,35 @@ router.get('/:id?', async (req, res) => {
         });
     }
 });
+
+router.get('/edit/:id', authenticate, async (req, res) => {
+    try {
+
+        const {id} = req.params;
+
+        const user = req.user;
+
+        const listing = await Listing.findByPk(id, {
+            include: [
+                CropListing,
+                TransportListing,
+                StorageListing,
+            ]
+        });
+
+        if (user.id !== listing.UserId) throw new Error("403 forbidden: You are not authenticated to edit this listing");
+
+        res.status(200).json({
+            status: "success",
+            listing: listing
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            status: "failed",
+            message: error.message,
+        });
+    }
+})
 
 module.exports = router;
