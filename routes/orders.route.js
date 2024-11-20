@@ -2,13 +2,14 @@ const express = require('express');
 const Listing = require('../database/models/Listing');
 const {authenticate} = require("../middleware/auth");
 const Payment = require("../database/models/Payment");
-const User = require("../database/models/User");
+const sequelize = require("../database/connection");
 const StorageOrder = require("../database/models/StorageOrder");
 const TransportOrder = require("../database/models/TransportOrder");
 const TransportListing = require("../database/models/TransportListing");
 const StorageListing = require("../database/models/StorageListing");
 const CropOrder = require("../database/models/CropOrder");
 const CropListing = require("../database/models/CropListing");
+const {response} = require("express");
 
 const router = express.Router();
 
@@ -128,6 +129,53 @@ router.get('/payments', authenticate, async (req, res) => {
 
     } catch (error) {
         res.status(500).json({
+            status: "failed",
+            message: error.message,
+        });
+    }
+})
+
+router.put('/edit', authenticate, async (req, res) => {
+    try {
+        const {status, type, id} = req.body;
+
+        const result = await sequelize.transaction(async () => {
+
+            if (type === "crop") {
+                const crop = await CropOrder.findByPk(id);
+                crop.status = status;
+                await crop.save();
+
+                return crop;
+            }
+            if (type === "storage") {
+                const storage = await StorageOrder.findByPk(id);
+                storage.status = status;
+                await storage.save();
+
+                return storage;
+            }
+            if (type === "transport") {
+                const transport = await TransportOrder.findByPk(id);
+                transport.status = status;
+                await transport.save();
+
+                return transport;
+            }
+
+            if (result) {
+                res.status(200).json({
+                    status: 'success',
+                    result: result,
+                })
+            } else {
+                throw new Error("Unexpected error!")
+            }
+
+        })
+    }
+    catch (error) {
+        res.status(400).json({
             status: "failed",
             message: error.message,
         });
