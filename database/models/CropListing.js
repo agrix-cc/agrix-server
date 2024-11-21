@@ -52,7 +52,7 @@ const CropListing = sequelize.define('CropListing', {
         defaultValue: false,
     },
 });
-
+// Association between Listing and Crop listing
 Listing.hasOne(CropListing);
 CropListing.belongsTo(Listing);
 

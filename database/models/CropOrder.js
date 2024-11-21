@@ -26,13 +26,13 @@ const CropOrder = sequelize.define('CropOrder', {
         allowNull: false,
     }
 });
-
+// Relationship between CropOrder and Payment
 CropOrder.belongsTo(Payment, { foreignKey: 'payment_id' });
 Payment.hasOne(CropOrder, { foreignKey: 'payment_id' });
-
+// Relationship between CropListing and CropOrder
 CropOrder.belongsTo(CropListing);
 CropListing.hasMany(CropOrder);
-
+// Relationship between Crop order and Users
 CropOrder.belongsTo(User, { foreignKey: 'customer_id' });
 User.hasMany(CropOrder, { foreignKey: 'customer_id' });
 

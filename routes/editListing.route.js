@@ -13,19 +13,35 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
 
+/**
+ * Route to edit an existing listing by ID.
+ * @route POST /:id
+ * @param {Object} req - The request object.
+ * @param {string} req.params.id - The ID of the listing to edit.
+ * @param {Object} req.body - The request body containing form data.
+ * @param {Array} req.files - The array of image files uploaded.
+ * @param {Object} res - The response object.
+ * @returns {Object} - A JSON object indicating the status of the operation.
+ */
 router.post('/:id', authenticate, upload.array('images'), async (req, res) => {
     try {
-
+        // Get listing id from url parameters
         const {id} = req.params;
 
         const formData = req.body;
+        // Convert form data listing information into json object
         const listingInfo = JSON.parse(formData.listingInfo);
 
+        // Sequelize transaction
         const result = await sequelize.transaction(async () => {
+            // find the listing by id
             const listing = await Listing.findByPk(id);
+            // update listing with new information
             await listing.update(listingInfo);
 
+            // add images if any received from the request
             if (req.files.length) {
+                // remove old images and add new images
                 await ListingImage.destroy({
                     where: {
                       ListingId: id,
@@ -35,6 +51,8 @@ router.post('/:id', authenticate, upload.array('images'), async (req, res) => {
                     uploadListingImage(file, listing);
                 });
             }
+
+            // Edit other relative listing informations in transport crop and storage with updated information
 
             let additionalInfo = {};
             if (listingInfo.listing_type === "crop") {

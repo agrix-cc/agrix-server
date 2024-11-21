@@ -27,6 +27,11 @@ app.use(cors());
 
 const PORT = process.env.PORT;
 
+/**
+ * Synchronizes all database models and starts the server.
+ * make { force: true } to reset the database
+ * make { force: false, alter: true } to alter tables
+ */
 sequelize.sync({force: false})
     .then(() => {
         console.log("All Database models were synchronized successfully!");
@@ -60,7 +65,9 @@ app.use('/orders', orders);
 // Search route
 app.use('/search', search);
 
+/**
+ * Starts the server and listens on the specified port.
+ */
 app.listen(PORT || 5050, () => {
     console.log(`Server is listening to PORT: ${PORT}`);
 });
-

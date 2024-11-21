@@ -31,7 +31,7 @@ const Listing = sequelize.define('Listing', {
     }
 });
 
-// Listing model
+// Listing model relationship with Users
 Listing.belongsTo(User);
 User.hasMany(Listing);
 

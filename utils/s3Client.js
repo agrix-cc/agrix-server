@@ -1,3 +1,8 @@
+/**
+ * @file s3Client.js
+ * @description Utility functions for interacting with AWS S3, including getting signed URLs and uploading images.
+ */
+
 const {getSignedUrl} = require("@aws-sdk/s3-request-presigner");
 const {S3Client, GetObjectCommand, PutObjectCommand} = require("@aws-sdk/client-s3");
 const {v4} = require("uuid");
@@ -17,6 +22,11 @@ const client = new S3Client({
     region: awsRegion,
 });
 
+/**
+ * Generates a signed URL for accessing an image in the S3 bucket.
+ * @param {string} name - The name of the image file in the S3 bucket.
+ * @returns {Promise<string|null>} - The signed URL or null if an error occurs.
+ */
 const getImage = async (name) => {
     const params = {
         Bucket: awsBucketName,
@@ -33,6 +43,12 @@ const getImage = async (name) => {
     }
 };
 
+/**
+ * Uploads a listing image to the S3 bucket and associates it with a new listing.
+ * @param {Object} file - The file object containing the image data.
+ * @param {Object} newListing - The new listing object to associate the image with.
+ * @returns {Promise<void>}
+ */
 const uploadListingImage = async (file, newListing) => {
     const imageName = `${v4()}${extname(file.originalname)}`;
     const params = {
@@ -53,6 +69,12 @@ const uploadListingImage = async (file, newListing) => {
     }
 }
 
+/**
+ * Uploads a profile picture to the S3 bucket and updates the user's profile picture.
+ * @param {Object} file - The file object containing the image data.
+ * @param {Object} user - The user object to update with the new profile picture.
+ * @returns {Promise<void>}
+ */
 const uploadProfilePic = async (file, user) => {
     try {
         if (!user) return;

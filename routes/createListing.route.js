@@ -12,9 +12,17 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
 
+/**
+ * Route to create a new listing.
+ * @route POST /
+ * @param {Object} req - The request object.
+ * @param {Object} req.body - The request body containing form data.
+ * @param {Array} req.files - The array of image files uploaded.
+ * @param {Object} res - The response object.
+ * @returns {Object} - A JSON object indicating the status of the operation.
+ */
 router.post('/', authenticate, upload.array('images'), async (req, res) => {
     try {
-
         const formData = req.body;
         const listingInfo = JSON.parse(formData.listingInfo);
 

@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../connection');
-
+// This model is to store the payment id from stripe and the amount
 const Payment = sequelize.define('Payment', {
     amount: {
         type: DataTypes.DOUBLE,
