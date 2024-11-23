@@ -18,6 +18,9 @@ const orders = require('./routes/orders.route');
 const search = require('./routes/search.route');
 const profile = require('./routes/profile.route');
 
+// Import the User model
+const { User } = require('./database/models/User');
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({
@@ -39,6 +42,18 @@ sequelize.sync({force: false})
     .catch(error => {
         console.error(`Error synchronizing the database: ${error}`);
     });
+
+// Fetch users route
+app.get('/api/users', async (req, res) => {
+    try {
+        // Fetch all users from the database (you can modify this to implement pagination if needed)
+        const users = await User.findAll();  // Fetch all users using Sequelize's findAll method
+        res.json({ users });
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        res.status(500).json({ message: 'Failed to fetch users' });
+    }
+});
 
 // Sign up route
 app.use('/signup', signup);
