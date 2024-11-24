@@ -3,6 +3,8 @@ const router = express.Router();
 const User = require('../database/models/User'); // Assuming User is your model
 const { authenticate } = require('../middleware/auth');
 const { Op } = require('sequelize');
+const {promise} = require("bcrypt/promises");
+const {getImage} = require("../utils/s3Client");
 
 router.get('/', authenticate, async (req, res) => {
     try {
@@ -14,7 +16,7 @@ router.get('/', authenticate, async (req, res) => {
 
         // Test query
         const result = await User.findAndCountAll({
-            attributes: ['id', 'first_name', 'last_name', 'profile_pic', 'bio'], // Fetch specific fields
+            attributes: ['id', 'first_name', 'last_name', 'profile_pic', 'bio', 'profile_type'], // Fetch specific fields
             where: {
                 id: {
                     [Op.ne]: user.id// Exclude the current user
@@ -26,8 +28,13 @@ router.get('/', authenticate, async (req, res) => {
 
         // console.log('Fetched users:', result.rows);
 
+        const users = await Promise.all(result.rows.map(async user => ({
+            ...user.dataValues,
+            image: user.profile_pic && await getImage(user.profile_pic)
+        })))
+
         res.json({
-            users: result.rows,
+            users: users,
             totalPages: Math.ceil(result.count / limit),
         });
 
