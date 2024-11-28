@@ -124,7 +124,7 @@ router.post("/request", authenticate, async (req, res) => {
         res.status(201).json({ message: "Connection request sent" });
     } catch (error) {
         console.error("Error sending connection request:", error);
-        res.status(500).json({ message: "Error sending connection request" });
+        res.status(500).json({ message: error.message });
     }
 });
 
