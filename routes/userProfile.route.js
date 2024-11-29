@@ -21,7 +21,10 @@ router.get("/:userId", authenticate, async (req, res) => {
 
         // Fetch the user's listings
         const listings = await Listing.findAll({
-            where: { user_id: userId },
+            // TODO FIX user profile view
+            // see the database before referring column names here
+            // Listings tables user_id is not exists it is UserId
+            where: { UserId: userId },
             attributes: ["id", "title", "description", "createdAt"],
         });
 
