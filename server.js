@@ -19,6 +19,7 @@ const search = require('./routes/search.route');
 const profile = require('./routes/profile.route');
 const userRoutes = require('./routes/userRoutes');
 const profileRoute = require("./routes/userProfile.route"); 
+const reports = require("./routes/reports.route");
 
 const app = express();
 app.use(express.json());
@@ -71,6 +72,8 @@ app.use('/search', search);
 app.use('/connections', userRoutes);
 //Redirecting to profile
 app.use("/profile", profileRoute); // New profile route
+//for reports
+app.use("/reports", reports);
 
 
 /**
