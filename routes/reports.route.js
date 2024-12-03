@@ -1,6 +1,6 @@
 const {authenticate} = require("../middleware/auth");
 const express = require("express");
-const {Op} = require("sequelize");
+const {Op, fn, col} = require("sequelize");
 const CropOrder = require("../database/models/CropOrder");
 const StorageOrder = require("../database/models/StorageOrder");
 const TransportOrder = require("../database/models/TransportOrder");
@@ -48,34 +48,26 @@ router.get("/user-reports", authenticate, async (req, res) => {
     }
 });
 
-// Optimised way to retrieve stats
-// Get only the necessary items from the database rather getting all the information
-// Get the count of orders
-// https://sequelize.org/docs/v7/querying/select-methods/#count
 router.get('/stats', authenticate, async (req, res) => {
     try {
-
         const userId = req.user.id;
         const profileType = req.user.profile_type;
 
-        // Initialise objects to store stats counts
         const orderStats = {};
         const listingStats = {};
+        let additionalStats = {};
+        let salesByMonth = [];
 
-        // Function to get the stats of orders based on the listing type and status of the order
-        // Refer to these documentations
-        // https://sequelize.org/docs/v7/querying/select-methods/#count
-        // https://sequelize.org/docs/v6/advanced-association-concepts/eager-loading/
         const getOrderStats = async (user_id, ListingModel, OrderModel, status) => {
             return await OrderModel.count({
                 include: [
                     {
                         model: ListingModel,
-                        required: true, // Inner join
+                        required: true,
                         include: [
                             {
                                 model: Listing,
-                                required: true, // Inner join
+                                required: true,
                                 where: {UserId: user_id},
                             },
                         ],
@@ -85,7 +77,6 @@ router.get('/stats', authenticate, async (req, res) => {
             });
         }
 
-        // Function to get the listing count based on listing status (pending, confirmed, rejected)
         const getListingStats = async (user_id, status) => {
             return await Listing.count({
                 where: {
@@ -95,12 +86,64 @@ router.get('/stats', authenticate, async (req, res) => {
             });
         }
 
-        // Call above defined functions to get the stats count of orders based on the profile type
+        const getSalesByMonth = async (user_id) => {
+            const sales = await CropOrder.findAll({
+                attributes: [
+                    [fn('MONTH', col('createdAt')), 'month'],
+                    [fn('SUM', col('total_price')), 'total_sales']
+                ],
+                include: [
+                    {
+                        model: CropListing,
+                        required: true,
+                        include: [
+                            {
+                                model: Listing,
+                                required: true,
+                                where: {UserId: user_id},
+                            },
+                        ],
+                    },
+                ],
+                group: [fn('MONTH', col('createdAt'))],
+                order: [[fn('MONTH', col('createdAt')), 'ASC']],
+            });
+
+            const salesData = new Array(12).fill(0);
+            sales.forEach(sale => {
+                salesData[sale.dataValues.month - 1] = parseFloat(sale.dataValues.total_sales);
+            });
+
+            return salesData;
+        }
+
         if (profileType === "farmer" || profileType === "seller") {
             orderStats["delivered"] = await getOrderStats(userId, CropListing, CropOrder, "delivered");
             orderStats["pending"] = await getOrderStats(userId, CropListing, CropOrder, "pending");
             orderStats["processing"] = await getOrderStats(userId, CropListing, CropOrder, "processing");
             orderStats["cancelled"] = await getOrderStats(userId, CropListing, CropOrder, "cancelled");
+
+            additionalStats["mostSoldCrops"] = await CropOrder.findAll({
+                attributes: ['CropListing.crop_name', [fn('COUNT', col('CropOrder.id')), 'count']],
+                include: [
+                    {
+                        model: CropListing,
+                        attributes: [],
+                        include: [
+                            {
+                                model: Listing,
+                                where: {UserId: userId},
+                                attributes: [],
+                            },
+                        ],
+                    },
+                ],
+                group: ['CropListing.crop_name'],
+                order: [[fn('COUNT', col('CropOrder.id')), 'DESC']],
+                limit: 5,
+            });
+
+            salesByMonth = await getSalesByMonth(userId);
 
         } else if (profileType === "transport") {
             orderStats["pending"] = await getOrderStats(userId, TransportListing, TransportOrder, "pending");
@@ -108,6 +151,26 @@ router.get('/stats', authenticate, async (req, res) => {
             orderStats["awaiting"] = await getOrderStats(userId, TransportListing, TransportOrder, "awaiting");
             orderStats["intransit"] = await getOrderStats(userId, TransportListing, TransportOrder, "intransit");
             orderStats["delivered"] = await getOrderStats(userId, TransportListing, TransportOrder, "delivered");
+
+            additionalStats["mostCommonDestinations"] = await TransportOrder.findAll({
+                attributes: ['destination_address', [fn('COUNT', col('TransportOrder.id')), 'count']],
+                include: [
+                    {
+                        model: TransportListing,
+                        attributes: [],
+                        include: [
+                            {
+                                model: Listing,
+                                where: {UserId: userId},
+                                attributes: [],
+                            },
+                        ],
+                    },
+                ],
+                group: ['destination_address'],
+                order: [[fn('COUNT', col('TransportOrder.id')), 'DESC']],
+                limit: 5,
+            });
 
         } else if (profileType === "storage") {
             orderStats["pending"] = await getOrderStats(userId, StorageListing, StorageOrder, "pending");
@@ -118,30 +181,48 @@ router.get('/stats', authenticate, async (req, res) => {
             orderStats["overdue"] = await getOrderStats(userId, StorageListing, StorageOrder, "overdue");
             orderStats["abandoned"] = await getOrderStats(userId, StorageListing, StorageOrder, "abandoned");
 
+            additionalStats["mostUsedFeatures"] = await StorageOrder.findAll({
+                attributes: [
+                    [fn('SUM', col('StorageListing.pest_control_availability')), 'pest_control'],
+                    [fn('SUM', col('StorageListing.humidity_control_availability')), 'humidity_control'],
+                    [fn('SUM', col('StorageListing.ventilation_availability')), 'ventilation'],
+                ],
+                include: [
+                    {
+                        model: StorageListing,
+                        attributes: [],
+                        include: [
+                            {
+                                model: Listing,
+                                where: {UserId: userId},
+                                attributes: [],
+                            },
+                        ],
+                    },
+                ],
+            });
+
         } else {
-            // If user type is not from the above user types handle error
             return res.status(400).json({
                 message: "unidentified user type!"
             });
         }
 
-        // get stats count of listings by calling above defined method
         listingStats["pending"] = await getListingStats(userId, "pending");
         listingStats["confirmed"] = await getListingStats(userId, "confirmed");
         listingStats["rejected"] = await getListingStats(userId, "rejected");
 
-        // Send successful response
         return res.status(200).json({
             orderStats: orderStats,
             listingStats: listingStats,
+            additionalStats: additionalStats,
+            salesByMonth: salesByMonth,
         });
 
     } catch (error) {
-
         return res.status(500).json({
             message: error.message
         });
-
     }
 })
 
