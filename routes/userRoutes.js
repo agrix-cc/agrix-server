@@ -267,5 +267,31 @@ router.delete("/:userId/remove", authenticate, async (req, res) => {
     }
 });
 
+// Fetch connection status
+router.get("/status/:userId", authenticate, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const currentUserId = req.user.id;
+
+        const connection = await Connection.findOne({
+            where: {
+                [Op.or]: [
+                    { user_id: currentUserId, connected_user_id: userId },
+                    { user_id: userId, connected_user_id: currentUserId },
+                ],
+            },
+        });
+
+        if (!connection) {
+            return res.json({ status: null });
+        }
+
+        res.json({ status: connection.status });
+    } catch (error) {
+        console.error("Error fetching connection status:", error);
+        res.status(500).json({ message: "Error fetching connection status" });
+    }
+});
+
 
 module.exports = router;
