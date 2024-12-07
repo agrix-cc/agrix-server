@@ -8,6 +8,7 @@ const CropListing = require("../database/models/CropListing");
 const TransportListing = require("../database/models/TransportListing");
 const StorageListing = require("../database/models/StorageListing");
 const Listing = require("../database/models/Listing");
+const Payment = require("../database/models/Payment");
 
 const router = express.Router();
 
@@ -89,8 +90,8 @@ router.get('/stats', authenticate, async (req, res) => {
         const getSalesByMonth = async (user_id) => {
             const sales = await CropOrder.findAll({
                 attributes: [
-                    [fn('MONTH', col('createdAt')), 'month'],
-                    [fn('SUM', col('total_price')), 'total_sales']
+                    [fn('MONTH', col('CropOrder.createdAt')), 'month'],
+                    [fn('SUM', col('Payment.amount')), 'total_sales']
                 ],
                 include: [
                     {
@@ -104,9 +105,13 @@ router.get('/stats', authenticate, async (req, res) => {
                             },
                         ],
                     },
+                    {
+                        model: Payment,
+                        required: true,
+                    },
                 ],
-                group: [fn('MONTH', col('createdAt'))],
-                order: [[fn('MONTH', col('createdAt')), 'ASC']],
+                group: [fn('MONTH', col('CropOrder.createdAt'))],
+                order: [[fn('MONTH', col('CropOrder.createdAt')), 'ASC']],
             });
 
             const salesData = new Array(12).fill(0);
