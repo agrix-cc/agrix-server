@@ -129,25 +129,19 @@ router.get('/stats', authenticate, async (req, res) => {
             orderStats["cancelled"] = await getOrderStats(userId, CropListing, CropOrder, "cancelled");
 
             additionalStats["mostSoldCrops"] = await CropOrder.findAll({
-                attributes: ['CropListing.crop_name', [fn('COUNT', col('CropOrder.id')), 'count']],
+                attributes: [
+                    [fn('COUNT', col('CropOrder.id')), 'order_count']
+                ],
                 include: [
                     {
                         model: CropListing,
-                        attributes: [],
-                        include: [
-                            {
-                                model: Listing,
-                                where: {UserId: userId},
-                                attributes: [],
-                            },
-                        ],
-                    },
+                        attributes: ['crop_name']
+                    }
                 ],
                 group: ['CropListing.crop_name'],
                 order: [[fn('COUNT', col('CropOrder.id')), 'DESC']],
-                limit: 5,
+                limit: 5
             });
-
             salesByMonth = await getSalesByMonth(userId);
 
         } else if (profileType === "transport") {
@@ -191,6 +185,7 @@ router.get('/stats', authenticate, async (req, res) => {
                     [fn('SUM', col('StorageListing.pest_control_availability')), 'pest_control'],
                     [fn('SUM', col('StorageListing.humidity_control_availability')), 'humidity_control'],
                     [fn('SUM', col('StorageListing.ventilation_availability')), 'ventilation'],
+                    [fn('SUM', col('StorageListing.temperature_control')), 'temperature_control'],
                 ],
                 include: [
                     {
