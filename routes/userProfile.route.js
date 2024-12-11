@@ -2,13 +2,14 @@ const express = require("express");
 const router = express.Router();
 const User = require("../database/models/User");
 const Listing = require("../database/models/Listing"); // Assuming a Listing model exists
-const { authenticate } = require("../middleware/auth");
+const {authenticate} = require("../middleware/auth");
+const {getImage} = require("../utils/s3Client");
 
 // Fetch user profile and their listings
 router.get("/:userId", authenticate, async (req, res) => {
     console.log("Hello from user profile route");
     try {
-        const { userId } = req.params;
+        const {userId} = req.params;
 
         // Fetch the user's profile details
         const user = await User.findByPk(userId, {
@@ -16,7 +17,7 @@ router.get("/:userId", authenticate, async (req, res) => {
         });
 
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({message: "User not found"});
         }
 
         // Fetch the user's listings
@@ -24,15 +25,20 @@ router.get("/:userId", authenticate, async (req, res) => {
             // TODO FIX user profile view
             // see the database before referring column names here
             // Listings tables user_id is not exists it is UserId
-            where: { UserId: userId },
+            where: {UserId: userId},
             attributes: ["id", "title", "description", "createdAt"],
         });
 
+        const imageUrl = await getImage(user.profile_pic);
+
         // Return user data and listings
-        res.status(200).json({ user, listings });
+        res.status(200).json({
+            user: {...user, imageUrl: imageUrl},
+            listings,
+        });
     } catch (error) {
         console.error("Error fetching user profile:", error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({message: error.message});
     }
 });
 
