@@ -33,7 +33,7 @@ router.get("/:userId", authenticate, async (req, res) => {
 
         // Return user data and listings
         res.status(200).json({
-            user: {...user, imageUrl: imageUrl},
+            user: {...user.dataValues, imageUrl: imageUrl},
             listings,
         });
     } catch (error) {
