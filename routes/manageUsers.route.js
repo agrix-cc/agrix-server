@@ -3,16 +3,43 @@ const router = express.Router();
 const User = require("../database/models/User");
 const { authenticate } = require("../middleware/auth");
 
-// Fetch all users
+// Fetch all users excluding admins
 router.get("/users", authenticate, async (req, res) => {
     try {
-        const users = await User.findAll();
+        const users = await User.findAll({
+            where: {
+                user_role: 'user'
+            }
+        });
         res.status(200).json({
             status: "success",
             users: users,
         });
     } catch (error) {
         console.error("Error fetching users:", error);
+        res.status(500).json({
+            status: "failed",
+            message: error.message,
+        });
+    }
+});
+
+// Fetch users by profile type
+router.get("/users/filter/:profileType", authenticate, async (req, res) => {
+    try {
+        const { profileType } = req.params;
+        const users = await User.findAll({
+            where: {
+                user_role: 'user',
+                profile_type: profileType
+            }
+        });
+        res.status(200).json({
+            status: "success",
+            users: users,
+        });
+    } catch (error) {
+        console.error("Error fetching users by profile type:", error);
         res.status(500).json({
             status: "failed",
             message: error.message,
