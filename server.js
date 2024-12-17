@@ -17,10 +17,11 @@ const placeOrder = require('./routes/placeOrder.route');
 const orders = require('./routes/orders.route');
 const search = require('./routes/search.route');
 const profile = require('./routes/profile.route');
-const userRoutes = require('./routes/userRoutes');
+const userRoutes = require('./routes/user.route');
 const profileRoute = require("./routes/userProfile.route");
 const reports = require("./routes/reports.route");
 const admin = require("./routes/auth.route");
+const manageUsers = require("./routes/manageUsers.route");
 
 const app = express();
 app.use(express.json());
@@ -46,7 +47,6 @@ sequelize.sync({force: false})
 
 
 app.use('/auth', admin);
-
 // Sign up route
 app.use('/signup', signup);
 // Sign in route
@@ -77,6 +77,7 @@ app.use('/connections', userRoutes);
 app.use("/profile", profileRoute); // New profile route
 //for reports
 app.use("/reports", reports);
+app.use("/manage-users", manageUsers);
 
 /**
  * Starts the server and listens on the specified port.
