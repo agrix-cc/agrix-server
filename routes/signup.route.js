@@ -11,6 +11,8 @@ router.post('/', async (req, res) => {
     try {
         const {first_name, last_name, email, password, profile_type} = req.body;
 
+        console.log("Received signup request:", req.body); // Log the request data
+
         const existingUser = await User.findOne({where: {email: email}});
 
         if (existingUser) {
@@ -34,6 +36,7 @@ router.post('/', async (req, res) => {
         });
 
     } catch (error) {
+        console.error("Error during signup:", error); // Log the error
         res.status(404).json({
             status: 'failed',
             message: error.message,
