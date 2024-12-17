@@ -115,11 +115,25 @@ router.get("/received", authenticate, async (req, res) => {
 // Send a connection request
 router.post("/request", authenticate, async (req, res) => {
     try {
-        const {connectedUserId} = req.body;
+        const { connectedUserId } = req.body;
         const userId = req.user.id;
 
         if (!connectedUserId) {
-            return res.status(400).json({message: "Connected user ID is required"});
+            return res.status(400).json({ message: "Connected user ID is required" });
+        }
+
+        // Check if a connection already exists
+        const existingConnection = await Connection.findOne({
+            where: {
+                [Op.or]: [
+                    { user_id: userId, connected_user_id: connectedUserId },
+                    { user_id: connectedUserId, connected_user_id: userId },
+                ],
+            },
+        });
+
+        if (existingConnection) {
+            return res.status(400).json({ message: "Connection already exists" });
         }
 
         await Connection.create({
@@ -128,10 +142,10 @@ router.post("/request", authenticate, async (req, res) => {
             status: "pending",
         });
 
-        res.status(201).json({message: "Connection request sent"});
+        res.status(201).json({ message: "Connection request sent" });
     } catch (error) {
         console.error("Error sending connection request:", error);
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
 });
 
@@ -159,11 +173,11 @@ router.post("/:userId/undo", authenticate, async (req, res) => {
 // Accept a connection request
 router.post("/accept", authenticate, async (req, res) => {
     try {
-        const {userId} = req.body;
+        const { userId } = req.body;
         const currentUserId = req.user.id;
 
         await Connection.update(
-            {status: "accepted"},
+            { status: "accepted" },
             {
                 where: {
                     user_id: userId,
@@ -173,10 +187,10 @@ router.post("/accept", authenticate, async (req, res) => {
             }
         );
 
-        res.status(200).json({message: "Connection accepted"});
+        res.status(200).json({ message: "Connection accepted" });
     } catch (error) {
         console.error("Error accepting connection request:", error);
-        res.status(500).json({message: "Error accepting connection request"});
+        res.status(500).json({ message: "Error accepting connection request" });
     }
 });
 
@@ -274,31 +288,29 @@ router.delete("/:userId/remove", authenticate, async (req, res) => {
     }
 });
 
-// Fetch connection status
 router.get("/status/:userId", authenticate, async (req, res) => {
     try {
-        const {userId} = req.params;
+        const { userId } = req.params;
         const currentUserId = req.user.id;
 
         const connection = await Connection.findOne({
             where: {
                 [Op.or]: [
-                    {user_id: currentUserId, connected_user_id: userId},
-                    {user_id: userId, connected_user_id: currentUserId},
+                    { user_id: currentUserId, connected_user_id: userId },
+                    { user_id: userId, connected_user_id: currentUserId },
                 ],
             },
         });
 
         if (!connection) {
-            return res.json({status: null});
+            return res.json({ status: null });
         }
 
-        res.json({status: connection.status});
+        res.json({ status: connection.status });
     } catch (error) {
         console.error("Error fetching connection status:", error);
-        res.status(500).json({message: "Error fetching connection status"});
+        res.status(500).json({ message: "Error fetching connection status" });
     }
 });
-
 
 module.exports = router;
