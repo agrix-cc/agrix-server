@@ -22,6 +22,7 @@ const profileRoute = require("./routes/userProfile.route");
 const reports = require("./routes/reports.route");
 const admin = require("./routes/auth.route");
 const manageUsers = require("./routes/manageUsers.route");
+const adminReports = require("./routes/adminReports.route");
 
 const app = express();
 app.use(express.json());
@@ -77,7 +78,10 @@ app.use('/connections', userRoutes);
 app.use("/profile", profileRoute); // New profile route
 //for reports
 app.use("/reports", reports);
+// Manage users route
 app.use("/manage-users", manageUsers);
+// Admin reports route
+app.use("/admin-reports", adminReports);
 
 /**
  * Starts the server and listens on the specified port.

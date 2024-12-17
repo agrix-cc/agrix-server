@@ -3,14 +3,10 @@ const router = express.Router();
 const User = require("../database/models/User");
 const { authenticate } = require("../middleware/auth");
 
-// Fetch all users excluding admins
+// Fetch all users including admins
 router.get("/users", authenticate, async (req, res) => {
     try {
-        const users = await User.findAll({
-            where: {
-                user_role: 'user'
-            }
-        });
+        const users = await User.findAll();
         res.status(200).json({
             status: "success",
             users: users,
@@ -28,11 +24,9 @@ router.get("/users", authenticate, async (req, res) => {
 router.get("/users/filter/:profileType", authenticate, async (req, res) => {
     try {
         const { profileType } = req.params;
+        const whereClause = profileType === "admin" ? { user_role: "admin" } : { profile_type: profileType };
         const users = await User.findAll({
-            where: {
-                user_role: 'user',
-                profile_type: profileType
-            }
+            where: whereClause
         });
         res.status(200).json({
             status: "success",
@@ -96,6 +90,30 @@ router.put("/users/:id", authenticate, async (req, res) => {
         });
     } catch (error) {
         console.error("Error updating user:", error);
+        res.status(500).json({
+            status: "failed",
+            message: error.message,
+        });
+    }
+});
+
+// Delete user
+router.delete("/users/:id", authenticate, async (req, res) => {
+    try {
+        const user = await User.findByPk(req.params.id);
+        if (!user) {
+            return res.status(404).json({
+                status: "failed",
+                message: "User not found",
+            });
+        }
+        await user.destroy();
+        res.status(200).json({
+            status: "success",
+            message: "User deleted successfully",
+        });
+    } catch (error) {
+        console.error("Error deleting user:", error);
         res.status(500).json({
             status: "failed",
             message: error.message,
