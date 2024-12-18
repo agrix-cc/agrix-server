@@ -24,6 +24,18 @@ const Listing = sequelize.define('Listing', {
         values: ['crop', 'storage', 'transport'],
         defaultValue: 'crop',
     },
+    address: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    lat: {
+        type: DataTypes.DOUBLE,
+        allowNull: false,
+    },
+    lng: {
+        type: DataTypes.DOUBLE,
+        allowNull: false,
+    },
     status: {
         type: DataTypes.ENUM,
         values: ['pending', 'confirmed', 'rejected'],

@@ -101,7 +101,7 @@ router.get('/user', authenticate, async (req, res) => {
         const user = req.user;
 
         const listings = await Listing.findAll({
-            where: { userId: user.id },
+            where: {userId: user.id},
             include: [
                 CropListing,
                 StorageListing,
@@ -166,6 +166,41 @@ router.get('/latest', async (req, res) => {
             message: error.message,
         });
     }
+})
+
+router.get('/transport', async (req, res) => {
+    try {
+        const transportListings = await Listing.findAll({
+            where: {
+                listing_type: "transport"
+            },
+            include: [
+                TransportListing,
+                {
+                    model: ListingImage,
+                    attributes: ['image'],
+                    limit: 1,
+                },
+            ]
+        })
+
+        const listingInfo = await Promise.all(transportListings.map(async (listing) => ({
+            imageUrl: await getImage(listing.ListingImages[0].image),
+            listing
+        })));
+
+        res.status(200).json({
+            status: "success",
+            listings: listingInfo,
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            status: "failed",
+            message: error.message,
+        });
+    }
+
 })
 
 module.exports = router;
