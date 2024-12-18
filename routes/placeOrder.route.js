@@ -154,4 +154,61 @@ router.post('/storage', authenticate, async (req, res) => {
     }
 });
 
+router.post('/delivery', authenticate, async (req, res) => {
+    try {
+        const {order, stripeId} = req.body;
+
+        const result = await sequelize.transaction(async () => {
+
+            const cropOrder = await CropOrder.create({
+                quantity: order.crop.qty,
+                delivery_method: order.crop.deliveryMethod,
+                placed_address: order.crop.address
+            });
+
+            const transportOrder = await TransportOrder.create({
+                booked_date: order.transport.booked_date,
+                origin_lng: order.transport.origin_lng,
+                origin_lat: order.transport.origin_lat,
+                destination_lng: order.transport.destination_lng,
+                destination_lat: order.transport.destination_lat,
+                origin_address: order.transport.origin_address,
+                destination_address: order.transport.destination_address,
+                avg_distance: order.transport.avg_distance,
+            });
+
+            const payment = await Payment.create({
+                amount: order.total,
+                stripe_id: stripeId
+            });
+
+            cropOrder.setTransportOrder(transportOrder);
+
+            await payment.setTransportOrder(transportOrder);
+            await payment.setCropOrder(cropOrder);
+
+            const transportListing = await TransportListing.findByPk(order.transport.transportId);
+            const cropListing = await CropListing.findByPk(order.crop.cropId);
+
+            await transportListing.addTransportOrder(transportOrder);
+            await cropListing.addCropOrder(cropOrder);
+
+            const user = await User.findByPk(req.user.id)
+            await user.addTransportOrder(transportOrder);
+            await user.addCropOrder(cropOrder);
+
+        })
+        res.status(200).json({
+            status: "success",
+            message: "Delivery placed successfully!",
+            result: result,
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: "failed",
+            message: error.message,
+        });
+    }
+})
+
 module.exports = router;

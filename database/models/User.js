@@ -1,6 +1,7 @@
 const {DataTypes} = require('sequelize');
 const sequelize = require('../connection');
 
+
 const User = sequelize.define('User', {
     first_name: {
         type: DataTypes.STRING,
@@ -50,7 +51,7 @@ const User = sequelize.define('User', {
     profile_type: {
         type: DataTypes.ENUM,
         values: ['farmer', 'seller', 'transport', 'storage'],
-        allowNull: false,
+        allowNull: true,
         validate: {
             isIn: [['farmer', 'seller', 'transport', 'storage']],
         }

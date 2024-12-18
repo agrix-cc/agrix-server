@@ -3,6 +3,7 @@ const sequelize = require('../connection');
 const TransportListing = require('./TransportListing');
 const Payment = require("./Payment");
 const User = require("./User");
+const CropOrder = require("./CropOrder");
 
 const TransportOrder = sequelize.define('TransportOrder', {
     booked_date: {
@@ -47,6 +48,9 @@ const TransportOrder = sequelize.define('TransportOrder', {
 
 TransportOrder.belongsTo(Payment, { foreignKey: 'payment_id' });
 Payment.hasOne(TransportOrder, { foreignKey: 'payment_id' });
+
+TransportOrder.belongsTo(CropOrder, { foreignKey: 'crop_order_id' });
+CropOrder.hasOne(TransportOrder, { foreignKey: 'crop_order_id' });
 
 TransportOrder.belongsTo(TransportListing);
 TransportListing.hasMany(TransportOrder);
