@@ -15,7 +15,7 @@ const StorageOrder = sequelize.define('StorageOrder', {
     },
     status: {
         type: DataTypes.ENUM,
-        values: ['pending', 'accepted', 'awaiting', 'instorage', 'completed', 'overdue', 'abandoned'],
+        values: ['pending', 'accepted', 'awaiting', 'instorage', 'completed', 'overdue', 'abandoned', 'cancelled'],
         defaultValue: 'pending',
         allowNull: false,
     }
