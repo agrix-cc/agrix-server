@@ -158,9 +158,27 @@ router.put('/edit', authenticate, async (req, res) => {
             if (type === "transport") {
                 const transport = await TransportOrder.findByPk(id);
                 transport.status = status;
-                await transport.save();
+                const cropId = transport.crop_order_id;
+                if (!cropId) {
+                    await transport.save();
+                    return transport;
+                }
+                const  cropOrder = await CropOrder.findByPk(cropId);
+                switch (status) {
+                    case "accepted":
+                        cropOrder.status = "processing";
+                        await cropOrder.save();
+                        break;
+                    case "cancelled":
+                        cropOrder.status = "cancelled";
+                        await cropOrder.save();
+                        break;
+                    case "delivered":
+                        cropOrder.status = "delivered";
+                        await cropOrder.save();
+                        break;
+                }
 
-                return transport;
             }
 
             if (result) {

@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Connection = require("../database/models/Connection");
 const User = require("../database/models/User");
-const {authenticate} = require("../middleware/auth");
-const {Op} = require("sequelize");
-const {getImage} = require("../utils/s3Client");
+const { authenticate } = require("../middleware/auth");
+const { Op, where } = require("sequelize");
+const { getImage } = require("../utils/s3Client");
 
 // Fetch users for "Get Connected"
 router.get("/", authenticate, async (req, res) => {
@@ -15,9 +15,10 @@ router.get("/", authenticate, async (req, res) => {
         const existingConnections = await Connection.findAll({
             where: {
                 [Op.or]: [
-                    {user_id: userId},
-                    {connected_user_id: userId},
+                    { user_id: userId },
+                    { connected_user_id: userId },
                 ],
+                status: 'pending'
             },
         });
 
@@ -29,8 +30,8 @@ router.get("/", authenticate, async (req, res) => {
             where: {
                 id: {
                     [Op.and]: [
-                        {[Op.ne]: userId},
-                        {[Op.notIn]: excludedUserIds},
+                        { [Op.ne]: userId },
+                        { [Op.notIn]: excludedUserIds },
                     ],
                 },
             },
@@ -43,10 +44,10 @@ router.get("/", authenticate, async (req, res) => {
         })));
 
 
-        res.json({users: responceUsers});
+        res.json({ users: responceUsers });
     } catch (error) {
         console.error("Error fetching users:", error);
-        res.status(500).json({message: "Error fetching users"});
+        res.status(500).json({ message: "Error fetching users" });
     }
 });
 
@@ -56,7 +57,7 @@ router.get("/sent", authenticate, async (req, res) => {
         const userId = req.user.id;
 
         const sentRequests = await Connection.findAll({
-            where: {user_id: userId, status: "pending"},
+            where: { user_id: userId, status: "pending" },
             include: [
                 {
                     model: User,
@@ -74,10 +75,10 @@ router.get("/sent", authenticate, async (req, res) => {
             profile_pic: await getImage(req.connectedUser.profile_pic),
         })));
 
-        res.json({requests: formattedRequests});
+        res.json({ requests: formattedRequests });
     } catch (error) {
         console.error("Error fetching sent requests:", error);
-        res.status(500).json({message: "Error fetching sent requests"});
+        res.status(500).json({ message: "Error fetching sent requests" });
     }
 });
 
@@ -87,7 +88,7 @@ router.get("/received", authenticate, async (req, res) => {
         const userId = req.user.id;
 
         const receivedRequests = await Connection.findAll({
-            where: {connected_user_id: userId, status: "pending"},
+            where: { connected_user_id: userId, status: "pending" },
             include: [
                 {
                     model: User,
@@ -105,10 +106,10 @@ router.get("/received", authenticate, async (req, res) => {
             profile_pic: await getImage(req.requestingUser.profile_pic),
         })));
 
-        res.json({requests: formattedRequests});
+        res.json({ requests: formattedRequests });
     } catch (error) {
         console.error("Error fetching received requests:", error);
-        res.status(500).json({message: "Error fetching received requests"});
+        res.status(500).json({ message: "Error fetching received requests" });
     }
 });
 
@@ -129,11 +130,27 @@ router.post("/request", authenticate, async (req, res) => {
                     { user_id: userId, connected_user_id: connectedUserId },
                     { user_id: connectedUserId, connected_user_id: userId },
                 ],
+                status: "pending",
             },
         });
 
-        if (existingConnection) {
+        if (existingConnection && existingConnection.status === "pending") {
             return res.status(400).json({ message: "Connection already exists" });
+        }
+
+        if (existingConnection && existingConnection.status === "rejected") {
+            await Connection.update(
+                { status: 'pending' },
+                {
+                    where: {
+                        [Op.or]: [
+                            { user_id: userId },
+                            { connected_user_id: connectedUserId },
+                        ]
+                    },
+                },
+            );
+            return res.status(400).json({ message: "Connection already accepted" });
         }
 
         await Connection.create({
@@ -141,7 +158,6 @@ router.post("/request", authenticate, async (req, res) => {
             connected_user_id: connectedUserId,
             status: "pending",
         });
-
         res.status(201).json({ message: "Connection request sent" });
     } catch (error) {
         console.error("Error sending connection request:", error);
@@ -152,7 +168,7 @@ router.post("/request", authenticate, async (req, res) => {
 // Undo a connection request
 router.post("/:userId/undo", authenticate, async (req, res) => {
     try {
-        const {userId} = req.params;
+        const { userId } = req.params;
         const currentUserId = req.user.id;
 
         await Connection.destroy({
@@ -163,10 +179,10 @@ router.post("/:userId/undo", authenticate, async (req, res) => {
             },
         });
 
-        res.status(200).json({message: "Connection request undone"});
+        res.status(200).json({ message: "Connection request undone" });
     } catch (error) {
         console.error("Error undoing connection request:", error);
-        res.status(500).json({message: "Error undoing connection request"});
+        res.status(500).json({ message: "Error undoing connection request" });
     }
 });
 
@@ -197,11 +213,11 @@ router.post("/accept", authenticate, async (req, res) => {
 // Reject a connection request
 router.post("/reject", authenticate, async (req, res) => {
     try {
-        const {userId} = req.body;
+        const { userId } = req.body;
         const currentUserId = req.user.id;
 
         await Connection.update(
-            {status: "rejected"},
+            { status: "rejected" },
             {
                 where: {
                     user_id: userId,
@@ -211,10 +227,10 @@ router.post("/reject", authenticate, async (req, res) => {
             }
         );
 
-        res.status(200).json({message: "Connection rejected"});
+        res.status(200).json({ message: "Connection rejected" });
     } catch (error) {
         console.error("Error rejecting connection request:", error);
-        res.status(500).json({message: "Error rejecting connection request"});
+        res.status(500).json({ message: "Error rejecting connection request" });
     }
 });
 
@@ -227,8 +243,8 @@ router.get("/connections", authenticate, async (req, res) => {
             where: {
                 status: "accepted",
                 [Op.or]: [
-                    {user_id: userId},
-                    {connected_user_id: userId},
+                    { user_id: userId },
+                    { connected_user_id: userId },
                 ],
             },
             include: [
@@ -257,17 +273,17 @@ router.get("/connections", authenticate, async (req, res) => {
             };
         }));
 
-        res.json({connections: formattedConnections});
+        res.json({ connections: formattedConnections });
     } catch (error) {
         console.error("Error fetching connections:", error);
-        res.status(500).json({message: "Error fetching connections"});
+        res.status(500).json({ message: "Error fetching connections" });
     }
 });
 
 // Remove a connection
 router.delete("/:userId/remove", authenticate, async (req, res) => {
     try {
-        const {userId} = req.params;
+        const { userId } = req.params;
         const currentUserId = req.user.id;
 
         // Delete the connection
@@ -275,16 +291,16 @@ router.delete("/:userId/remove", authenticate, async (req, res) => {
             where: {
                 status: "accepted",
                 [Op.or]: [
-                    {user_id: currentUserId, connected_user_id: userId},
-                    {user_id: userId, connected_user_id: currentUserId},
+                    { user_id: currentUserId, connected_user_id: userId },
+                    { user_id: userId, connected_user_id: currentUserId },
                 ],
             },
         });
 
-        res.status(200).json({message: "Connection removed successfully"});
+        res.status(200).json({ message: "Connection removed successfully" });
     } catch (error) {
         console.error("Error removing connection:", error);
-        res.status(500).json({message: "Error removing connection"});
+        res.status(500).json({ message: "Error removing connection" });
     }
 });
 

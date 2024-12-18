@@ -40,7 +40,7 @@ const TransportOrder = sequelize.define('TransportOrder', {
     },
     status: {
         type: DataTypes.ENUM,
-        values: ['pending', 'accepted', 'awaiting', 'intransit', 'delivered'],
+        values: ['pending', 'accepted', 'awaiting', 'intransit', 'delivered', 'cancelled'],
         defaultValue: 'pending',
         allowNull: false,
     }
