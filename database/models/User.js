@@ -23,6 +23,10 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    verification_code	: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     user_role: {
         type: DataTypes.ENUM,
         values: ['user', 'admin'],

@@ -23,6 +23,7 @@ const reports = require("./routes/reports.route");
 const admin = require("./routes/auth.route");
 const manageUsers = require("./routes/manageUsers.route");
 const adminReports = require("./routes/adminReports.route");
+const emailRoutes = require('./routes/emailRoutes');
 
 const app = express();
 app.use(express.json());
@@ -82,6 +83,8 @@ app.use("/reports", reports);
 app.use("/manage-users", manageUsers);
 // Admin reports route
 app.use("/admin-reports", adminReports);
+// Email sending API route
+app.use('/api', emailRoutes);
 
 /**
  * Starts the server and listens on the specified port.
