@@ -2,6 +2,8 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
+const socketIo = require('socket.io');
 const sequelize = require('./database/connection');
 
 // Routes
@@ -25,12 +27,18 @@ const manageUsers = require("./routes/manageUsers.route");
 const adminReports = require("./routes/adminReports.route");
 const emailRoutes = require('./routes/emailRoutes');
 
+const messageRoutes = require("./routes/messageRoutes");
+
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server); 
+
+//const use = express();
 app.use(express.json());
-app.use(express.urlencoded({
-    extended: true
-}));
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+
+app.set('socket', io); 
 
 const PORT = process.env.PORT;
 
@@ -85,6 +93,9 @@ app.use("/manage-users", manageUsers);
 app.use("/admin-reports", adminReports);
 // Email sending API route
 app.use('/api', emailRoutes);
+
+app.use("/api", messageRoutes);
+
 
 /**
  * Starts the server and listens on the specified port.
