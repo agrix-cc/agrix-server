@@ -67,11 +67,9 @@ app.use('/edit', editListing);
 app.use('/delete', deleteListing);
 // Stripe payment gateway routes
 app.use('/stripe', stripe);
-// Place order (Crop/Transport/Storage)
 app.use('/order', placeOrder);
 // Orders route
 app.use('/orders', orders);
-// Search route
 app.use('/search', search);
 //define the route here for connections
 app.use('/connections', userRoutes);
