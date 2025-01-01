@@ -2,6 +2,7 @@ const express = require('express');
 const Listing = require('../database/models/Listing');
 const StorageListing = require('../database/models/StorageListing');
 const TransportListing = require('../database/models/TransportListing');
+const GeneralUserListing = require('../database/models/GeneralUserListing');
 const CropListing = require('../database/models/CropListing');
 const ListingImage = require('../database/models/ListingImage');
 const User = require('../database/models/User');
@@ -33,6 +34,7 @@ router.get('/:id?', async (req, res) => {
                     }]
                 },
                 CropListing,
+                GeneralUserListing,
                 {
                     model: User,
                     attributes: ['first_name', 'last_name', 'profile_pic', 'profile_type']
