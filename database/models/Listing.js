@@ -21,7 +21,7 @@ const Listing = sequelize.define('Listing', {
     },
     listing_type: {
         type: DataTypes.ENUM,
-        values: ['crop', 'storage', 'transport','manufacturer'],
+        values: ['crop', 'storage', 'transport','generaluser'],
         defaultValue: 'crop',
     },
     address: {
