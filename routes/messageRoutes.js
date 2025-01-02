@@ -164,4 +164,40 @@ router.get('/conversation/:userId', authenticate, async (req, res) => {
   }
 });
 
+
+
+
+router.post('/messages/send', authenticate, async (req, res) => {
+  const { receiver_id, content } = req.body;
+  const sender_id = req.user.id;
+
+  if (!receiver_id || !content) {
+    return res.status(400).json({ error: 'Receiver ID and content are required' });
+  }
+
+  try {
+    // Check message count
+    const messageCount = await Message.count({
+      where: { sender_id, receiver_id, isTemporary: true },
+    });
+
+    if (messageCount >= 3) {
+      return res.status(403).json({ error: 'Message limit reached for this user' });
+    }
+
+    const message = await Message.create({
+      sender_id,
+      receiver_id,
+      content,
+      isTemporary: true, // Mark as temporary
+    });
+
+    return res.status(201).json({ message: 'Temporary message sent!', data: message });
+  } catch (err) {
+    console.error('Error sending temporary message:', err);
+    return res.status(500).json({ error: 'Failed to send temporary message' });
+  }
+});
+
+
 module.exports = router;

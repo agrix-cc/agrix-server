@@ -93,7 +93,7 @@ app.use("/manage-users", manageUsers);
 app.use("/admin-reports", adminReports);
 // Email sending API route
 app.use('/api', emailRoutes);
-
+// Message senrding API route
 app.use("/api", messageRoutes);
 
 
