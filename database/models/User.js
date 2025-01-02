@@ -54,10 +54,10 @@ const User = sequelize.define('User', {
     },
     profile_type: {
         type: DataTypes.ENUM,
-        values: ['farmer', 'seller', 'transport', 'storage','manufacturer'],
+        values: ['farmer', 'seller', 'transport', 'storage','generaluser'],
         allowNull: true,
         validate: {
-            isIn: [['farmer', 'seller', 'transport', 'storage','manufacturer']],
+            isIn: [['farmer', 'seller', 'transport', 'storage','generaluser']],
         }
     },
     bio: {

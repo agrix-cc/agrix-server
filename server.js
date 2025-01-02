@@ -47,7 +47,7 @@ const PORT = process.env.PORT;
  * make { force: true } to reset the database
  * make { force: false, alter: true } to alter tables
  */
-sequelize.sync({force: false})
+sequelize.sync({force: false, alter: false})
     .then(() => {
         console.log("All Database models were synchronized successfully!");
     })
