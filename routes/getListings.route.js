@@ -1,3 +1,4 @@
+//agrix-server\routes\getListings.route.js
 const express = require('express');
 const Listing = require('../database/models/Listing');
 const StorageListing = require('../database/models/StorageListing');
@@ -19,7 +20,7 @@ router.get('/:offset/:type/:sort/:city/:district/:keyword?/:limit?', async (req,
         const ordering = (sort === "latest" || !sort) ? ['createdAt', 'DESC'] : ['createdAt', 'ASC'];
 
         const whereClause = {
-            listing_type: (type === "all" || !type) ? ["crop", "transport", "storage"] : type
+            listing_type: (type === "all" || !type) ? ["crop", "transport", "storage", "generaluser"] : type
         };
 
         if ((city !== "all") || !city) {
@@ -208,4 +209,90 @@ router.get('/transport', async (req, res) => {
 
 })
 
+router.get("/flash-sales", async (req, res) => {
+    try {
+        const flashSales = await CropListing.findAll({
+            where: { is_flash_sale: true },
+            include: [
+                {
+                    model: Listing,
+                    attributes: ["title", "description", "city", "district"],
+                    include: [
+                        {
+                            model: ListingImage,
+                            attributes: ["image"],
+                        },
+                    ],
+                },
+            ],
+        });
+
+        const responseListings = await Promise.all(
+            flashSales.map(async (listing) => ({
+                id: listing.id,
+                title: listing.Listing.title,
+                description: listing.Listing.description,
+                discounted_price: listing.discounted_price,
+                price_per_kg: listing.price_per_kg,
+                imageUrl: listing.Listing.ListingImages[0]
+                    ? await getImage(listing.Listing.ListingImages[0].image)
+                    : null,
+                city: listing.Listing.city,
+                district: listing.Listing.district,
+            }))
+        );
+
+        res.status(200).json({
+            status: "success",
+            listings: responseListings,
+        });
+    } catch (error) {
+        console.error("Error in /flash-sales:", error);
+        res.status(500).json({
+            status: "failed",
+            message: "An error occurred while fetching flash sales.",
+        });
+    }
+});
+
 module.exports = router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

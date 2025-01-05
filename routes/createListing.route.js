@@ -1,3 +1,4 @@
+//agrix-server\routes\createListing.route.js
 const express = require('express');
 const multer = require('multer');
 const Listing = require('../database/models/Listing');
@@ -62,6 +63,12 @@ router.post('/', authenticate, upload.array('images'), async (req, res) => {
 
             case "crop":
                 const cropInfo = JSON.parse(formData.cropInfo);
+                const bestBeforeDate = new Date(cropInfo.best_before_date);
+                const currentDate = new Date();
+                if (currentDate > bestBeforeDate) {
+                    cropInfo.is_flash_sale = true;
+                    cropInfo.discounted_price = cropInfo.price_per_kg * 0.8;
+                }
                 const newCropListing = await CropListing.create(cropInfo);
                 await newListing.setCropListing(newCropListing);
 

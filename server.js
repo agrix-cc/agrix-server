@@ -30,6 +30,7 @@ const emailRoutes = require('./routes/emailRoutes');
 const messageRoutes = require("./routes/messageRoutes");
 
 const app = express();
+const startFlashSaleCron = require('./utils/flashSaleCron');
 const server = http.createServer(app);
 const io = socketIo(server); 
 
@@ -97,6 +98,7 @@ app.use('/api', emailRoutes);
 app.use("/api", messageRoutes);
 
 
+startFlashSaleCron();
 /**
  * Starts the server and listens on the specified port.
  */
