@@ -26,7 +26,6 @@ const admin = require("./routes/auth.route");
 const manageUsers = require("./routes/manageUsers.route");
 const adminReports = require("./routes/adminReports.route");
 const emailRoutes = require('./routes/emailRoutes');
-
 const messageRoutes = require("./routes/messageRoutes");
 
 const app = express();
@@ -96,6 +95,8 @@ app.use("/admin-reports", adminReports);
 app.use('/api', emailRoutes);
 // Message senrding API route
 app.use("/api", messageRoutes);
+
+app.use('/listing', require('./routes/getListings.route'));
 
 
 startFlashSaleCron();

@@ -7,7 +7,7 @@ const startFlashSaleCron = () => {
         const currentDate = new Date();
         try {
             await CropListing.update(
-                { is_flash_sale: true, discounted_price: sequelize.literal('price_per_kg * 0.8') },
+                { is_flash_sale: true, discounted_price: sequelize.literal('price_per_kg * 0.6') },
                 { where: { best_before_date: { [Op.lt]: currentDate }, is_flash_sale: false } }
             );
             console.log('Flash sale updates completed successfully!');

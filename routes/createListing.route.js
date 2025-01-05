@@ -67,7 +67,7 @@ router.post('/', authenticate, upload.array('images'), async (req, res) => {
                 const currentDate = new Date();
                 if (currentDate > bestBeforeDate) {
                     cropInfo.is_flash_sale = true;
-                    cropInfo.discounted_price = cropInfo.price_per_kg * 0.8;
+                    cropInfo.discounted_price = cropInfo.price_per_kg * 0.6;
                 }
                 const newCropListing = await CropListing.create(cropInfo);
                 await newListing.setCropListing(newCropListing);

@@ -130,6 +130,14 @@ const CropListing = sequelize.define("CropListing", {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
+        // flash_sale_start: 
+    // { type: DataTypes.DATE, 
+    //     allowNull: true 
+    // },
+    // flash_sale_end: 
+    // { type: DataTypes.DATE, 
+    //     allowNull: true 
+    // },
     discounted_price: {
         type: DataTypes.FLOAT,
         allowNull: true,
@@ -170,18 +178,27 @@ const CropListing = sequelize.define("CropListing", {
     },
 });
 
-// Hook for flash sale discounts
-CropListing.addHook("afterFind", (listing) => {
-    if (listing) {
-        const currentDate = new Date();
-        if (listing.best_before_date && currentDate > listing.best_before_date) {
-            listing.is_flash_sale = true;
-            listing.discounted_price = listing.price_per_kg * 0.8;
-        }
-    }
-});
+
 
 Listing.hasOne(CropListing);
 CropListing.belongsTo(Listing);
 
 module.exports = CropListing;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

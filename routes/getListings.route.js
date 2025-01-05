@@ -209,51 +209,47 @@ router.get('/transport', async (req, res) => {
 
 })
 
-router.get("/flash-sales", async (req, res) => {
+router.get('/flash-sales', async (req, res) => {
     try {
-        const flashSales = await CropListing.findAll({
-            where: { is_flash_sale: true },
+        const flashSaleListings = await Listing.findAll({
+            where: { listing_type: 'crop' },
             include: [
                 {
-                    model: Listing,
-                    attributes: ["title", "description", "city", "district"],
-                    include: [
-                        {
-                            model: ListingImage,
-                            attributes: ["image"],
-                        },
-                    ],
+                    model: CropListing,
+                    where: { is_flash_sale: true },
+                },
+                ListingImage,
+                {
+                    model: User,
+                    attributes: ['first_name', 'last_name', 'profile_pic', 'profile_type']
                 },
             ],
         });
 
-        const responseListings = await Promise.all(
-            flashSales.map(async (listing) => ({
-                id: listing.id,
-                title: listing.Listing.title,
-                description: listing.Listing.description,
-                discounted_price: listing.discounted_price,
-                price_per_kg: listing.price_per_kg,
-                imageUrl: listing.Listing.ListingImages[0]
-                    ? await getImage(listing.Listing.ListingImages[0].image)
-                    : null,
-                city: listing.Listing.city,
-                district: listing.Listing.district,
-            }))
-        );
+        const responseListings = await Promise.all(flashSaleListings.map(async listing => ({
+            id: listing.id,
+            title: listing.title,
+            description: listing.description,
+            crop: listing.CropListing,
+            images: await Promise.all(listing.ListingImages.map(async image => await getImage(image.image))),
+            user: listing.User,
+        })));
 
         res.status(200).json({
-            status: "success",
+            status: 'success',
             listings: responseListings,
         });
     } catch (error) {
-        console.error("Error in /flash-sales:", error);
         res.status(500).json({
-            status: "failed",
-            message: "An error occurred while fetching flash sales.",
+            status: 'failed',
+            message: error.message,
         });
     }
 });
+
+
+
+  
 
 module.exports = router;
 
