@@ -165,49 +165,6 @@ router.get('/latest', async (req, res) => {
             listings: responseListings,
         });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     } catch (error) {
         res.status(500).json({
             status: "failed",
@@ -290,8 +247,6 @@ router.get('/flash-sales', async (req, res) => {
 });
 
 
-
-  
 
 module.exports = router;
 
