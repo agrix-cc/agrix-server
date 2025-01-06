@@ -166,6 +166,48 @@ router.get('/latest', async (req, res) => {
         });
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     } catch (error) {
         res.status(500).json({
             status: "failed",
