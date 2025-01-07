@@ -22,10 +22,6 @@ const CropListing = sequelize.define("CropListing", {
         type: DataTypes.DATE,
         allowNull: true,
     },
-    // expiration_date: {
-    //     type: DataTypes.DATE,
-    //     allowNull: true,
-    // },
     is_flash_sale: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

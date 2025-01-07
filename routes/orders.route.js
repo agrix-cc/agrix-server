@@ -9,6 +9,7 @@ const TransportListing = require("../database/models/TransportListing");
 const StorageListing = require("../database/models/StorageListing");
 const CropOrder = require("../database/models/CropOrder");
 const CropListing = require("../database/models/CropListing");
+const Order = require('../database/models/Order');
 const {response} = require("express");
 
 const router = express.Router();
@@ -199,5 +200,31 @@ router.put('/edit', authenticate, async (req, res) => {
         });
     }
 })
+
+
+router.post("/flashSalesOrders", authenticate, async (req, res) => {
+    try {
+      const { userId, cropId, quantity, totalPrice, deposit_amount, address, orderDate } = req.body;
+  
+      if (!userId || !cropId || !quantity || !totalPrice || !address) {
+        return res.status(400).json({ status: "failed", message: "Missing required fields." });
+      }
+  
+      const order = await FlashSalesOrder.create({
+        userId,
+        cropId,
+        quantity,
+        totalPrice,
+        deposit_amount,
+        address,
+        orderDate,
+      });
+  
+      res.status(201).json({ status: "success", order });
+    } catch (error) {
+      res.status(500).json({ status: "failed", message: error.message });
+    }
+  });
+
 
 module.exports = router;
