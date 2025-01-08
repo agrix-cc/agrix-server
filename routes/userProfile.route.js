@@ -4,10 +4,11 @@ const User = require("../database/models/User");
 const Listing = require("../database/models/Listing"); // Assuming a Listing model exists
 const {authenticate} = require("../middleware/auth");
 const {getImage} = require("../utils/s3Client");
+const {Op} = require("sequelize");
+const sq = require("../database/connection");
 
 // Fetch user profile and their listings
 router.get("/:userId", authenticate, async (req, res) => {
-    console.log("Hello from user profile route");
     try {
         const {userId} = req.params;
 
@@ -42,4 +43,62 @@ router.get("/:userId", authenticate, async (req, res) => {
     }
 });
 
+router.get('/', authenticate, async (req, res) => {
+    try {
+        const currentUserId = req.user.id;
+
+        const users = await User.findAll({
+            where: {
+                id: {
+                    [Op.ne]: currentUserId
+                },
+                [Op.or]: [
+                    {id: {[Op.in]: sq.literal(`(SELECT sender_id FROM Messages WHERE receiver_id = ${currentUserId})`)}},
+                    {id: {[Op.in]: sq.literal(`(SELECT receiver_id FROM Messages WHERE sender_id = ${currentUserId})`)}}
+                ]
+            }
+        });
+
+        res.status(200).send({
+            status: "success",
+            data: users
+        });
+
+    } catch (error) {
+        res.status(500).send({
+            message: "failed",
+            data: error
+        });
+    }
+})
+
+router.get('/search/:name', authenticate, async (req, res) => {
+    try {
+
+        const {name} = req.params;
+
+        const users = await User.findAll({
+            where: {
+                id: {
+                    [Op.ne]: req.user.id
+                },
+                [Op.or]: [
+                    {first_name: {[Op.like]: `%${name}%`}},
+                    {last_name: {[Op.like]: `%${name}%`}}
+                ]
+            }
+        });
+
+        res.status(200).send({
+            status: "success",
+            users: users
+        })
+
+    } catch (error) {
+        res.status(500).send({
+            message: "failed",
+            data: error
+        })
+    }
+})
 module.exports = router;

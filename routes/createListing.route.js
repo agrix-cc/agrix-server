@@ -1,3 +1,4 @@
+//agrix-server\routes\createListing.route.js
 const express = require('express');
 const multer = require('multer');
 const Listing = require('../database/models/Listing');
@@ -5,6 +6,7 @@ const User = require('../database/models/User');
 const StorageListing = require('../database/models/StorageListing');
 const CropListing = require('../database/models/CropListing');
 const TransportListing = require('../database/models/TransportListing');
+const WantedListing = require('../database/models/WantedListing');
 const {authenticate} = require("../middleware/auth");
 const {uploadListingImage} = require("../utils/s3Client");
 const router = express.Router();
@@ -61,8 +63,24 @@ router.post('/', authenticate, upload.array('images'), async (req, res) => {
 
             case "crop":
                 const cropInfo = JSON.parse(formData.cropInfo);
+                const bestBeforeDate = new Date(cropInfo.best_before_date);
+                const currentDate = new Date();
+                if (currentDate > bestBeforeDate) {
+                    cropInfo.is_flash_sale = true;
+                    cropInfo.discounted_price = cropInfo.price_per_kg * 0.6;
+                }
                 const newCropListing = await CropListing.create(cropInfo);
                 await newListing.setCropListing(newCropListing);
+
+                res.status(200).json({
+                    status: "success",
+                    message: "Listing submitted successfully!",
+                });
+                break;
+            case "wanted":
+                const wantedListing = JSON.parse(formData.wantedInfo);
+                const newWantedListing = await WantedListing.create(wantedListing);
+                await newListing.setWantedListing(newWantedListing);
 
                 res.status(200).json({
                     status: "success",

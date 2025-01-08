@@ -2,6 +2,8 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
+const socketIo = require('socket.io');
 const sequelize = require('./database/connection');
 
 // Routes
@@ -15,6 +17,7 @@ const getSingleListing = require('./routes/getSingleListing.route');
 const stripe = require('./routes/stripe.route');
 const placeOrder = require('./routes/placeOrder.route');
 const orders = require('./routes/orders.route');
+const offers = require('./routes/offers.route');
 const search = require('./routes/search.route');
 const profile = require('./routes/profile.route');
 const userRoutes = require('./routes/user.route');
@@ -23,13 +26,20 @@ const reports = require("./routes/reports.route");
 const admin = require("./routes/auth.route");
 const manageUsers = require("./routes/manageUsers.route");
 const adminReports = require("./routes/adminReports.route");
+const emailRoutes = require('./routes/emailRoutes');
+const messageRoutes = require("./routes/messageRoutes");
 
 const app = express();
+const startFlashSaleCron = require('./utils/flashSaleCron');
+const server = http.createServer(app);
+const io = socketIo(server);
+
+//const use = express();
 app.use(express.json());
-app.use(express.urlencoded({
-    extended: true
-}));
+app.use(express.urlencoded({extended: true}));
 app.use(cors());
+
+app.set('socket', io);
 
 const PORT = process.env.PORT;
 
@@ -38,7 +48,7 @@ const PORT = process.env.PORT;
  * make { force: true } to reset the database
  * make { force: false, alter: true } to alter tables
  */
-sequelize.sync({force: false})
+sequelize.sync({force: false, alter: false})
     .then(() => {
         console.log("All Database models were synchronized successfully!");
     })
@@ -82,7 +92,17 @@ app.use("/reports", reports);
 app.use("/manage-users", manageUsers);
 // Admin reports route
 app.use("/admin-reports", adminReports);
+// Email sending API route
+app.use('/api', emailRoutes);
+// Message senrding API route
+app.use("/api", messageRoutes);
 
+app.use("/offers", offers);
+
+app.use('/listing', require('./routes/getListings.route'));
+
+
+startFlashSaleCron();
 /**
  * Starts the server and listens on the specified port.
  */

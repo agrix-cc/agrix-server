@@ -23,6 +23,10 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    verification_code	: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     user_role: {
         type: DataTypes.ENUM,
         values: ['user', 'admin'],
@@ -50,10 +54,10 @@ const User = sequelize.define('User', {
     },
     profile_type: {
         type: DataTypes.ENUM,
-        values: ['farmer', 'seller', 'transport', 'storage'],
+        values: ['farmer', 'seller', 'transport', 'storage','generaluser'],
         allowNull: true,
         validate: {
-            isIn: [['farmer', 'seller', 'transport', 'storage']],
+            isIn: [['farmer', 'seller', 'transport', 'storage','generaluser']],
         }
     },
     bio: {
@@ -61,5 +65,6 @@ const User = sequelize.define('User', {
         allowNull: true,
     },
 });
+ 
 
 module.exports = User;

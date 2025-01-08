@@ -2,6 +2,7 @@ const express = require('express');
 const Listing = require('../database/models/Listing');
 const StorageListing = require('../database/models/StorageListing');
 const TransportListing = require('../database/models/TransportListing');
+const WantedListing = require('../database/models/WantedListing');
 const CropListing = require('../database/models/CropListing');
 const ListingImage = require('../database/models/ListingImage');
 const {getImage} = require('../utils/s3Client');
@@ -18,7 +19,7 @@ router.get('/:offset/:type/:sort/:city/:district/:keyword?/:limit?', async (req,
         const ordering = (sort === "latest" || !sort) ? ['createdAt', 'DESC'] : ['createdAt', 'ASC'];
 
         const whereClause = {
-            listing_type: (type === "all" || !type) ? ["crop", "transport", "storage"] : type
+            listing_type: (type === "all" || !type) ? ["crop", "transport", "storage", "wanted"] : type
         };
 
         if ((city !== "all") || !city) {
@@ -58,6 +59,7 @@ router.get('/:offset/:type/:sort/:city/:district/:keyword?/:limit?', async (req,
                 ListingImage,
                 StorageListing,
                 TransportListing,
+                WantedListing,
                 CropListing,
                 {
                     model: User,
@@ -73,6 +75,7 @@ router.get('/:offset/:type/:sort/:city/:district/:keyword?/:limit?', async (req,
             crop: listing.CropListing,
             storage: listing.StorageListing,
             transport: listing.TransportListing,
+            wantedListing: listing.WantedListing,
             imageUrl: listing.ListingImages[0] ? await getImage(listing.ListingImages[0].image) : null,
             listing_type: listing.listing_type,
             user: listing.User,
@@ -131,6 +134,7 @@ router.get('/latest', async (req, res) => {
                 ListingImage,
                 StorageListing,
                 TransportListing,
+                WantedListing,
                 CropListing,
                 {
                     model: User,
@@ -146,6 +150,7 @@ router.get('/latest', async (req, res) => {
             crop: listing.CropListing,
             storage: listing.StorageListing,
             transport: listing.TransportListing,
+            wantedListing: listing.WantedListing,
             images: listing.ListingImages ? await Promise.all(listing.ListingImages.map(async item => await getImage(item.image))) : null,
             listing_type: listing.listing_type,
             user: listing.User,
@@ -158,7 +163,6 @@ router.get('/latest', async (req, res) => {
             status: "success",
             listings: responseListings,
         });
-
 
     } catch (error) {
         res.status(500).json({
@@ -203,4 +207,85 @@ router.get('/transport', async (req, res) => {
 
 })
 
+router.get('/flash-sales', async (req, res) => {
+    try {
+        const flashSaleListings = await Listing.findAll({
+            where: { listing_type: 'crop' },
+            include: [
+                {
+                    model: CropListing,
+                    where: { is_flash_sale: true },
+                },
+                ListingImage,
+                {
+                    model: User,
+                    attributes: ['first_name', 'last_name', 'profile_pic', 'profile_type']
+                },
+            ],
+        });
+
+        const responseListings = await Promise.all(flashSaleListings.map(async listing => ({
+            id: listing.id,
+            title: listing.title,
+            description: listing.description,
+            crop: listing.CropListing,
+            images: await Promise.all(listing.ListingImages.map(async image => await getImage(image.image))),
+            user: listing.User,
+            listingAllInfo: listing
+        })));
+
+        res.status(200).json({
+            status: 'success',
+            listings: responseListings,
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'failed',
+            message: error.message,
+        });
+    }
+});
+
+
+
 module.exports = router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

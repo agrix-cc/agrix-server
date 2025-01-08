@@ -29,9 +29,14 @@ router.post('/', async (req, res) => {
 
         const token = await jwt.sign({user: {...user.dataValues, image: null}}, JWT_SECRET_KEY, {expiresIn: '1h'});
 
+        // res.status(200).json({
+        //     status: 'success',
+        //     message: 'User registered successfully!',
+        //     token: token,
+        // });
         res.status(200).json({
             status: 'success',
-            message: 'User registered successfully!',
+            message: profile_type,
             token: token,
         });
 
