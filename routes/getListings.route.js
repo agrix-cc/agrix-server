@@ -231,6 +231,7 @@ router.get('/flash-sales', async (req, res) => {
             crop: listing.CropListing,
             images: await Promise.all(listing.ListingImages.map(async image => await getImage(image.image))),
             user: listing.User,
+            listingAllInfo: listing
         })));
 
         res.status(200).json({

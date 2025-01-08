@@ -9,8 +9,7 @@ const TransportListing = require("../database/models/TransportListing");
 const StorageListing = require("../database/models/StorageListing");
 const CropOrder = require("../database/models/CropOrder");
 const CropListing = require("../database/models/CropListing");
-const Order = require('../database/models/Order');
-const {response} = require("express");
+const FlashSalesOrder = require('../database/models/FlashSalesOrder');
 
 const router = express.Router();
 
@@ -26,7 +25,7 @@ router.get('/', authenticate, async (req, res) => {
                         include: [
                             {
                                 model: Listing,
-                                where: { UserId: user.id }
+                                where: {UserId: user.id}
                             }
                         ]
                     },
@@ -52,7 +51,7 @@ router.get('/', authenticate, async (req, res) => {
                         include: [
                             {
                                 model: Listing,
-                                where: { UserId: user.id }
+                                where: {UserId: user.id}
                             }
                         ]
                     },
@@ -77,7 +76,7 @@ router.get('/', authenticate, async (req, res) => {
                     include: [
                         {
                             model: Listing,
-                            where: { UserId: user.id }
+                            where: {UserId: user.id}
                         }
                     ]
                 },
@@ -164,7 +163,7 @@ router.put('/edit', authenticate, async (req, res) => {
                     await transport.save();
                     return transport;
                 }
-                const  cropOrder = await CropOrder.findByPk(cropId);
+                const cropOrder = await CropOrder.findByPk(cropId);
                 switch (status) {
                     case "accepted":
                         cropOrder.status = "processing";
@@ -192,8 +191,7 @@ router.put('/edit', authenticate, async (req, res) => {
             }
 
         })
-    }
-    catch (error) {
+    } catch (error) {
         res.status(400).json({
             status: "failed",
             message: error.message,
@@ -204,27 +202,28 @@ router.put('/edit', authenticate, async (req, res) => {
 
 router.post("/flashSalesOrders", authenticate, async (req, res) => {
     try {
-      const { userId, cropId, quantity, totalPrice, deposit_amount, address, orderDate } = req.body;
+        const {cropId, quantity, totalPrice, deposit_amount, address, orderDate} = req.body;
+        const userId = req.user.id
 
-      if (!userId || !cropId || !quantity || !totalPrice || !address) {
-        return res.status(400).json({ status: "failed", message: "Missing required fields." });
-      }
+        if (!userId || !cropId || !quantity || !totalPrice || !address) {
+            return res.status(400).json({status: "failed", message: "Missing required fields."});
+        }
 
-      const order = await FlashSalesOrder.create({
-        userId,
-        cropId,
-        quantity,
-        totalPrice,
-        deposit_amount,
-        address,
-        orderDate,
-      });
+        const order = await FlashSalesOrder.create({
+            userId,
+            cropId,
+            quantity,
+            totalPrice,
+            deposit_amount,
+            address,
+            orderDate,
+        });
 
-      res.status(201).json({ status: "success", order });
+        res.status(201).json({status: "success", order});
     } catch (error) {
-      res.status(500).json({ status: "failed", message: error.message });
+        res.status(500).json({status: "failed", message: error.message});
     }
-  });
+});
 
 
 module.exports = router;
