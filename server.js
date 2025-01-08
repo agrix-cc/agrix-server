@@ -17,6 +17,7 @@ const getSingleListing = require('./routes/getSingleListing.route');
 const stripe = require('./routes/stripe.route');
 const placeOrder = require('./routes/placeOrder.route');
 const orders = require('./routes/orders.route');
+const offers = require('./routes/offers.route');
 const search = require('./routes/search.route');
 const profile = require('./routes/profile.route');
 const userRoutes = require('./routes/user.route');
@@ -31,14 +32,14 @@ const messageRoutes = require("./routes/messageRoutes");
 const app = express();
 const startFlashSaleCron = require('./utils/flashSaleCron');
 const server = http.createServer(app);
-const io = socketIo(server); 
+const io = socketIo(server);
 
 //const use = express();
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 app.use(cors());
 
-app.set('socket', io); 
+app.set('socket', io);
 
 const PORT = process.env.PORT;
 
@@ -95,6 +96,8 @@ app.use("/admin-reports", adminReports);
 app.use('/api', emailRoutes);
 // Message senrding API route
 app.use("/api", messageRoutes);
+
+app.use("/offers", offers);
 
 app.use('/listing', require('./routes/getListings.route'));
 

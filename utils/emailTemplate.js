@@ -1,5 +1,5 @@
 const getEmailTemplate = (userName, v_code) => {
-  return `
+    return `
 <!DOCTYPE html>
 <html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="en">
 
@@ -269,4 +269,84 @@ const getEmailTemplate = (userName, v_code) => {
     `;
 };
 
-module.exports = getEmailTemplate;
+const newMessageTemplate = (receiver, sender, message) => {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .header {
+            background-color: #34C759;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 20px;
+            color: #333333;
+        }
+        .content p {
+            line-height: 1.5;
+            margin: 10px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #888888;
+            background-color: #f9f9f9;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>You Have a New Message!</h1>
+        </div>
+        <div class="content">
+            <p>Hi ${receiver},</p>
+            <p>You have received a new message from <strong>${sender}</strong>.</p>
+          <p>Message</p>
+          <p>${message}</p>
+        </div>
+        <div class="footer">
+            <p>AgriX</p>
+        </div>
+    </div>
+</body>
+</html>
+
+    `
+}
+
+module.exports = {getEmailTemplate, newMessageTemplate};

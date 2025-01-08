@@ -1,5 +1,7 @@
 const {Sequelize, DataTypes} = require("sequelize");
 const sequelize = require("../connection");
+const Listing = require("./Listing");
+const Offer = require("./Offer");
 
 const Message = sequelize.define("Message", {
     id: {
@@ -35,5 +37,11 @@ const Message = sequelize.define("Message", {
     createdAt: 'created_at',
     updatedAt: 'updatedAt',
 });
+
+Message.belongsTo(Listing);
+Listing.hasMany(Message);
+
+Message.belongsTo(Offer);
+Offer.hasOne(Message);
 
 module.exports = Message;

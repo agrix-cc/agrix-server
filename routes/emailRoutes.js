@@ -1,5 +1,5 @@
 const express = require("express");
-const sendEmail = require("../utils/emailService");
+const {sendEmail} = require("../utils/emailService");
 const User = require("../database/models/User");
 const bcrypt = require("bcrypt");
 const router = express.Router();

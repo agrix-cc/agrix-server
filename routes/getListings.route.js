@@ -1,9 +1,8 @@
-//agrix-server\routes\getListings.route.js
 const express = require('express');
 const Listing = require('../database/models/Listing');
 const StorageListing = require('../database/models/StorageListing');
 const TransportListing = require('../database/models/TransportListing');
-const GeneralUserListing = require('../database/models/GeneralUserListing');
+const WantedListing = require('../database/models/WantedListing');
 const CropListing = require('../database/models/CropListing');
 const ListingImage = require('../database/models/ListingImage');
 const {getImage} = require('../utils/s3Client');
@@ -20,7 +19,7 @@ router.get('/:offset/:type/:sort/:city/:district/:keyword?/:limit?', async (req,
         const ordering = (sort === "latest" || !sort) ? ['createdAt', 'DESC'] : ['createdAt', 'ASC'];
 
         const whereClause = {
-            listing_type: (type === "all" || !type) ? ["crop", "transport", "storage", "generaluser"] : type
+            listing_type: (type === "all" || !type) ? ["crop", "transport", "storage", "wanted"] : type
         };
 
         if ((city !== "all") || !city) {
@@ -60,7 +59,7 @@ router.get('/:offset/:type/:sort/:city/:district/:keyword?/:limit?', async (req,
                 ListingImage,
                 StorageListing,
                 TransportListing,
-                GeneralUserListing,
+                WantedListing,
                 CropListing,
                 {
                     model: User,
@@ -76,7 +75,7 @@ router.get('/:offset/:type/:sort/:city/:district/:keyword?/:limit?', async (req,
             crop: listing.CropListing,
             storage: listing.StorageListing,
             transport: listing.TransportListing,
-            wantedListing: listing.GeneralUserListing,
+            wantedListing: listing.WantedListing,
             imageUrl: listing.ListingImages[0] ? await getImage(listing.ListingImages[0].image) : null,
             listing_type: listing.listing_type,
             user: listing.User,
@@ -135,7 +134,7 @@ router.get('/latest', async (req, res) => {
                 ListingImage,
                 StorageListing,
                 TransportListing,
-                GeneralUserListing,
+                WantedListing,
                 CropListing,
                 {
                     model: User,
@@ -151,7 +150,7 @@ router.get('/latest', async (req, res) => {
             crop: listing.CropListing,
             storage: listing.StorageListing,
             transport: listing.TransportListing,
-            wantedListing: listing.GeneralUserListing,
+            wantedListing: listing.WantedListing,
             images: listing.ListingImages ? await Promise.all(listing.ListingImages.map(async item => await getImage(item.image))) : null,
             listing_type: listing.listing_type,
             user: listing.User,

@@ -79,9 +79,12 @@ router.get('/search/:name', authenticate, async (req, res) => {
 
         const users = await User.findAll({
             where: {
+                id: {
+                    [Op.ne]: req.user.id
+                },
                 [Op.or]: [
-                    { first_name: { [Op.like]: `%${name}%` } },
-                    { last_name: { [Op.like]: `%${name}%` } }
+                    {first_name: {[Op.like]: `%${name}%`}},
+                    {last_name: {[Op.like]: `%${name}%`}}
                 ]
             }
         });

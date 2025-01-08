@@ -49,7 +49,6 @@ router.post('/crop', authenticate, async (req, res) => {
 
         res.status(200).json({
             status: "success",
-            message: "Test Crop order api",
             result: result,
         });
 

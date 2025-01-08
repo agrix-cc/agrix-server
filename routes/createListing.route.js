@@ -6,7 +6,7 @@ const User = require('../database/models/User');
 const StorageListing = require('../database/models/StorageListing');
 const CropListing = require('../database/models/CropListing');
 const TransportListing = require('../database/models/TransportListing');
-const GeneralUserListing = require('../database/models/GeneralUserListing');
+const WantedListing = require('../database/models/WantedListing');
 const {authenticate} = require("../middleware/auth");
 const {uploadListingImage} = require("../utils/s3Client");
 const router = express.Router();
@@ -77,10 +77,10 @@ router.post('/', authenticate, upload.array('images'), async (req, res) => {
                     message: "Listing submitted successfully!",
                 });
                 break;
-            case "generaluser":
-                const wantedListing = JSON.parse(formData.generaluserInfo);
-                const newWantedListing = await GeneralUserListing.create(wantedListing);
-                await newListing.setGeneralUserListing(newWantedListing);
+            case "wanted":
+                const wantedListing = JSON.parse(formData.wantedInfo);
+                const newWantedListing = await WantedListing.create(wantedListing);
+                await newListing.setWantedListing(newWantedListing);
 
                 res.status(200).json({
                     status: "success",
