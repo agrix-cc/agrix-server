@@ -14,13 +14,6 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
     host: DB_HOST,
     dialect: "mysql",
     port: DB_PORT,
-    dialectOptions: {
-        ssl: {
-            require: true,
-            rejectUnauthorized: false,
-            ca: fs.readFileSync(path.resolve(__dirname, 'isrgrootx1.pem')).toString(),
-        }
-    }
 });
 
 // Establish connection with MySQL database
