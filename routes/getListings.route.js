@@ -5,16 +5,16 @@ const TransportListing = require('../database/models/TransportListing');
 const WantedListing = require('../database/models/WantedListing');
 const CropListing = require('../database/models/CropListing');
 const ListingImage = require('../database/models/ListingImage');
-const {getImage} = require('../utils/s3Client');
-const {Op, Sequelize} = require('sequelize');
+const { getImage } = require('../utils/s3Client');
+const { Op, Sequelize } = require('sequelize');
 const User = require("../database/models/User");
-const {authenticate} = require("../middleware/auth");
+const { authenticate } = require("../middleware/auth");
 
 const router = express.Router();
 
 router.get('/:offset/:type/:sort/:city/:district/:keyword?/:limit?', async (req, res) => {
     try {
-        const {offset, type, sort, city, district, keyword, limit} = req.params;
+        const { offset, type, sort, city, district, keyword, limit } = req.params;
 
         const ordering = (sort === "latest" || !sort) ? ['createdAt', 'DESC'] : ['createdAt', 'ASC'];
 
@@ -104,7 +104,7 @@ router.get('/user', authenticate, async (req, res) => {
         const user = req.user;
 
         const listings = await Listing.findAll({
-            where: {userId: user.id},
+            where: { userId: user.id },
             include: [
                 CropListing,
                 StorageListing,
@@ -210,9 +210,7 @@ router.get('/transport', async (req, res) => {
 router.get('/flash-sales', async (req, res) => {
     try {
         const flashSaleListings = await Listing.findAll({
-            where: {
-                is_flash_sale: true,
-            },
+            where: { listing_type: 'crop' },
             include: [
                 {
                     model: CropListing,
