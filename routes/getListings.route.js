@@ -6,7 +6,7 @@ const WantedListing = require('../database/models/WantedListing');
 const CropListing = require('../database/models/CropListing');
 const ListingImage = require('../database/models/ListingImage');
 const {getImage} = require('../utils/s3Client');
-const {Op} = require('sequelize');
+const {Op, Sequelize} = require('sequelize');
 const User = require("../database/models/User");
 const {authenticate} = require("../middleware/auth");
 
@@ -210,11 +210,22 @@ router.get('/transport', async (req, res) => {
 router.get('/flash-sales', async (req, res) => {
     try {
         const flashSaleListings = await Listing.findAll({
-            where: { listing_type: 'crop' },
+            where: {
+                is_flash_sale: true,
+            },
             include: [
                 {
                     model: CropListing,
-                    where: { is_flash_sale: true },
+                    where: {
+                        is_flash_sale: true,
+                        best_before_date:
+                            {
+                                [Op.between]: [
+                                    Sequelize.literal('CURRENT_DATE - INTERVAL 3 DAY'),
+                                    Sequelize.literal('CURRENT_DATE')
+                                ]
+                            }
+                    },
                 },
                 ListingImage,
                 {
@@ -245,7 +256,6 @@ router.get('/flash-sales', async (req, res) => {
         });
     }
 });
-
 
 
 module.exports = router;
