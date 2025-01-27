@@ -1,6 +1,4 @@
 const { Sequelize } = require('sequelize');
-const fs = require('fs');
-const path = require('path');
 
 // Database credentials from .env
 const DB_HOST = process.env.DB_HOST;

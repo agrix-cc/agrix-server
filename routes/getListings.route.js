@@ -5,16 +5,16 @@ const TransportListing = require('../database/models/TransportListing');
 const WantedListing = require('../database/models/WantedListing');
 const CropListing = require('../database/models/CropListing');
 const ListingImage = require('../database/models/ListingImage');
-const { getImage } = require('../utils/s3Client');
-const { Op, Sequelize } = require('sequelize');
+const {getImage} = require('../utils/s3Client');
+const {Op} = require('sequelize');
 const User = require("../database/models/User");
-const { authenticate } = require("../middleware/auth");
+const {authenticate} = require("../middleware/auth");
 
 const router = express.Router();
 
 router.get('/:offset/:type/:sort/:city/:district/:keyword?/:limit?', async (req, res) => {
     try {
-        const { offset, type, sort, city, district, keyword, limit } = req.params;
+        const {offset, type, sort, city, district, keyword, limit} = req.params;
 
         const ordering = (sort === "latest" || !sort) ? ['createdAt', 'DESC'] : ['createdAt', 'ASC'];
 
@@ -104,7 +104,7 @@ router.get('/user', authenticate, async (req, res) => {
         const user = req.user;
 
         const listings = await Listing.findAll({
-            where: { userId: user.id },
+            where: {userId: user.id},
             include: [
                 CropListing,
                 StorageListing,
@@ -207,93 +207,4 @@ router.get('/transport', async (req, res) => {
 
 })
 
-router.get('/flash-sales', async (req, res) => {
-    try {
-        const flashSaleListings = await Listing.findAll({
-            where: { listing_type: 'crop' },
-            include: [
-                {
-                    model: CropListing,
-                    where: {
-                        is_flash_sale: true,
-                        best_before_date:
-                            {
-                                [Op.between]: [
-                                    Sequelize.literal('CURRENT_DATE - INTERVAL 3 DAY'),
-                                    Sequelize.literal('CURRENT_DATE')
-                                ]
-                            }
-                    },
-                },
-                ListingImage,
-                {
-                    model: User,
-                    attributes: ['first_name', 'last_name', 'profile_pic', 'profile_type']
-                },
-            ],
-        });
-
-        const responseListings = await Promise.all(flashSaleListings.map(async listing => ({
-            id: listing.id,
-            title: listing.title,
-            description: listing.description,
-            crop: listing.CropListing,
-            images: await Promise.all(listing.ListingImages.map(async image => await getImage(image.image))),
-            user: listing.User,
-            listingAllInfo: listing
-        })));
-
-        res.status(200).json({
-            status: 'success',
-            listings: responseListings,
-        });
-    } catch (error) {
-        res.status(500).json({
-            status: 'failed',
-            message: error.message,
-        });
-    }
-});
-
-
 module.exports = router;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

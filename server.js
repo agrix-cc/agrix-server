@@ -20,7 +20,6 @@ const orders = require('./routes/orders.route');
 const offers = require('./routes/offers.route');
 const search = require('./routes/search.route');
 const profile = require('./routes/profile.route');
-const userRoutes = require('./routes/user.route');
 const profileRoute = require("./routes/userProfile.route");
 const reports = require("./routes/reports.route");
 const admin = require("./routes/auth.route");
@@ -30,7 +29,7 @@ const emailRoutes = require('./routes/emailRoutes');
 const messageRoutes = require("./routes/messageRoutes");
 
 const app = express();
-const startFlashSaleCron = require('./utils/flashSaleCron');
+const startFlashSale = require('./utils/flashSaleScript');
 const server = http.createServer(app);
 const io = socketIo(server);
 
@@ -55,7 +54,6 @@ sequelize.sync({force: false, alter: false})
     .catch(error => {
         console.error(`Error synchronizing the database: ${error}`);
     });
-
 
 app.use('/auth', admin);
 // Sign up route
@@ -82,8 +80,6 @@ app.use('/order', placeOrder);
 app.use('/orders', orders);
 // Search route
 app.use('/search', search);
-//define the route here for connections
-app.use('/connections', userRoutes);
 //Redirecting to profile
 app.use("/profile", profileRoute); // New profile route
 //for reports
@@ -99,10 +95,11 @@ app.use("/api", messageRoutes);
 
 app.use("/offers", offers);
 
-app.use('/listing', require('./routes/getListings.route'));
+app.use("/flash-sale", require("./routes/flashsale.route"));
 
-
-startFlashSaleCron();
+setInterval(async () => {
+    await startFlashSale();
+}, 60000);
 /**
  * Starts the server and listens on the specified port.
  */
