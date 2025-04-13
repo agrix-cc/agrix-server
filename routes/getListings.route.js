@@ -46,8 +46,6 @@ router.get('/:offset/:type/:sort/:city/:district/:keyword?/:limit?', async (req,
         } : null;
 
         const listings = await Listing.findAndCountAll({
-            offset: parseInt(offset) * 8,
-            limit: limit || 8,
             where: {
                 ...whereClause,
                 ...search,
